@@ -1,16 +1,13 @@
 /* ═══════════════════════════════════════════════════════════
-   SAVORLY — UI Module
-   All DOM rendering functions
+   RECIPIA — UI Module
+   All DOM rendering functions.
 ═══════════════════════════════════════════════════════════ */
 
-/* ── SKELETON LOADER ── */
-
-/**
- * Renders skeleton loading cards while recipes are being fetched.
- * @param {number} count - Number of skeleton cards to show
- */
+/* ══════════════════════════════════════════════════════════
+   SKELETON LOADER
+══════════════════════════════════════════════════════════ */
 function showSkeletons(count = 6) {
-  const el = document.getElementById('results');
+  const el    = document.getElementById('results');
   const cards = Array.from({ length: count }, () => `
     <div class="skeleton-card" aria-hidden="true">
       <div class="sk-header">
@@ -30,8 +27,7 @@ function showSkeletons(count = 6) {
         <div class="skeleton-block sk-btn"></div>
         <div class="skeleton-block sk-score"></div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 
   el.innerHTML = `
     <div class="loading-state" style="padding-bottom:0">
@@ -39,27 +35,18 @@ function showSkeletons(count = 6) {
       <h3 id="loadingMsg">Working the kitchen…</h3>
       <div class="loading-dots"><span></span><span></span><span></span></div>
     </div>
-    <div class="skeleton-grid" role="status" aria-label="Loading recipes">${cards}</div>
-  `;
+    <div class="skeleton-grid" role="status" aria-label="Loading recipes">${cards}</div>`;
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/**
- * Updates the loading message text (called while skeletons are showing).
- * @param {string} msg
- */
 function updateLoadingMsg(msg) {
   const el = document.getElementById('loadingMsg');
   if (el) el.textContent = msg;
 }
 
-/* ── ERROR STATE ── */
-
-/**
- * Renders an error message in the results area.
- * @param {string} title
- * @param {string} msg
- */
+/* ══════════════════════════════════════════════════════════
+   ERROR STATE
+══════════════════════════════════════════════════════════ */
 function showError(title, msg) {
   document.getElementById('results').innerHTML = `
     <div class="loading-state" role="alert">
@@ -69,59 +56,37 @@ function showError(title, msg) {
     </div>`;
 }
 
-/* ── RESULTS ── */
-
-/**
- * Renders the full results section with filters and recipe cards.
- * @param {object} data - { detectedIngredients, recipes }
- * @param {object[]} favorites
- * @param {object} filters - { difficulty, search }
- * @param {object} tx - Translation strings
- */
-function renderResults(data, favorites, filters, tx) {
+/* ══════════════════════════════════════════════════════════
+   RESULTS
+══════════════════════════════════════════════════════════ */
+function renderResults(data, favorites, filters, tx, targetId = 'results') {
   const { detectedIngredients, recipes } = data;
-  const filtered = applyFilters(recipes, filters);
+  const filtered   = applyFilters(recipes, filters);
   const smartCount = recipes.filter(r => r.isSmart).length;
 
-  document.getElementById('results').innerHTML = `
+  document.getElementById(targetId).innerHTML = `
     <div class="results-top">
       <div>
         <div class="results-title">${tx.foundRecipes} <span>${filtered.length}</span> ${tx.forYou}</div>
         <div class="results-meta">${tx.basedOn} ${detectedIngredients.length} ${tx.ingredients} · ${smartCount} ${tx.smartSugg}</div>
       </div>
     </div>
-
     <div class="filters-row" role="group" aria-label="Filter recipes">
-      <input
-        class="search-box"
-        id="searchBox"
-        placeholder="${tx.searchPlaceholder}"
-        value="${filters.search}"
-        aria-label="${tx.searchPlaceholder}"
-      />
+      <input class="search-box" id="searchBox" placeholder="${tx.searchPlaceholder}" value="${filters.search}" aria-label="${tx.searchPlaceholder}"/>
       <button class="filter-btn ${filters.difficulty === 'all'    ? 'active' : ''}" data-filter="all">${tx.allFilter}</button>
       <button class="filter-btn ${filters.difficulty === 'Easy'   ? 'active' : ''}" data-filter="Easy">${tx.easyFilter}</button>
       <button class="filter-btn ${filters.difficulty === 'Medium' ? 'active' : ''}" data-filter="Medium">${tx.mediumFilter}</button>
       <button class="filter-btn ${filters.difficulty === 'Hard'   ? 'active' : ''}" data-filter="Hard">${tx.hardFilter}</button>
     </div>
-
     <div class="detected-ingredients">
       <div class="detected-label">${tx.yourIngredients}</div>
       <div class="chip-row">${detectedIngredients.map(i => `<span class="chip">${i}</span>`).join('')}</div>
     </div>
-
     <div class="recipe-grid" id="recipeGrid">
       ${filtered.map((r, i) => renderCard(r, i, favorites, tx)).join('')}
-    </div>
-  `;
+    </div>`;
 }
 
-/**
- * Filters recipes based on search text and difficulty.
- * @param {object[]} recipes
- * @param {object} filters
- * @returns {object[]}
- */
 function applyFilters(recipes, filters) {
   const search = filters.search.toLowerCase();
   return recipes.filter(r => {
@@ -135,28 +100,16 @@ function applyFilters(recipes, filters) {
   });
 }
 
-/* ── RECIPE CARD ── */
-
-/**
- * Renders a single recipe card HTML string.
- * @param {object} recipe
- * @param {number} index - For staggered animation delay
- * @param {object[]} favorites
- * @param {object} tx
- * @returns {string} HTML string
- */
+/* ══════════════════════════════════════════════════════════
+   RECIPE CARD
+══════════════════════════════════════════════════════════ */
 function renderCard(recipe, index, favorites, tx) {
   const fav = isFavorite(favorites, recipe.id);
   return `
-    <article
-      class="recipe-card"
-      style="animation-delay:${index * 50}ms"
-      data-id="${recipe.id}"
-      aria-label="${recipe.title}"
-      tabindex="0"
-      role="button"
-    >
-      <button class="fav-btn ${fav ? 'active' : ''}" data-fav="${recipe.id}" aria-label="${fav ? 'Remove from favorites' : 'Add to favorites'}">
+    <article class="recipe-card" style="animation-delay:${index * 50}ms"
+      data-id="${recipe.id}" aria-label="${recipe.title}" tabindex="0" role="button">
+      <button class="fav-btn ${fav ? 'active' : ''}" data-fav="${recipe.id}"
+        aria-label="${fav ? 'Remove from favorites' : 'Add to favorites'}">
         ${fav ? '❤️' : '🤍'}
       </button>
       <div class="card-header">
@@ -173,12 +126,12 @@ function renderCard(recipe, index, favorites, tx) {
         <p class="card-desc">${recipe.description}</p>
         ${recipe.isSmart && recipe.smartSuggestion
           ? `<div class="smart-suggestion">${recipe.smartSuggestion}</div>` : ''}
-        ${recipe.nutrition
-          ? `<div class="nutrition-row">
-               <span class="nut-badge">🔥 ${recipe.nutrition.calories} kcal</span>
-               <span class="nut-badge">💪 ${recipe.nutrition.protein}</span>
-               <span class="nut-badge">🌾 ${recipe.nutrition.carbs}</span>
-             </div>` : ''}
+        ${recipe.nutrition ? `
+          <div class="nutrition-row">
+            <span class="nut-badge">🔥 ${recipe.nutrition.calories} kcal</span>
+            <span class="nut-badge">💪 ${recipe.nutrition.protein}</span>
+            <span class="nut-badge">🌾 ${recipe.nutrition.carbs}</span>
+          </div>` : ''}
         <div class="card-ingredients">
           ${(recipe.availableIngredients || []).slice(0, 4).map(i => `<span class="ing-chip">${i}</span>`).join('')}
           ${(recipe.missingIngredients   || []).slice(0, 2).map(i => `<span class="ing-chip missing">${i}</span>`).join('')}
@@ -191,20 +144,116 @@ function renderCard(recipe, index, favorites, tx) {
     </article>`;
 }
 
-/* ── MODAL ── */
+/* ══════════════════════════════════════════════════════════
+   CATEGORIES PAGE
+══════════════════════════════════════════════════════════ */
+function renderCategoryGrid(lang) {
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = CATEGORIES.map(cat => `
+    <div class="category-card" data-cat-id="${cat.id}" role="button" tabindex="0"
+      aria-label="${lang === 'ar' ? cat.nameAr : cat.name}">
+      <span class="cat-emoji">${cat.emoji}</span>
+      <span class="cat-name">${lang === 'ar' ? cat.nameAr : cat.name}</span>
+    </div>`).join('');
+}
 
-/**
- * Renders and shows the recipe detail modal.
- * @param {object} recipe
- * @param {object} tx
- */
+function showCategoryLoading(catName, tx) {
+  document.getElementById('categoryResults').innerHTML = `
+    <div class="loading-state">
+      <div class="chef-spinner">👨‍🍳</div>
+      <h3>${tx.catLoading} ${catName}…</h3>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATS PAGE
+══════════════════════════════════════════════════════════ */
+function renderStatsPage(tx, favCount) {
+  const stats       = loadStats();
+  const topCuisines = getTopN(stats.cuisineCounts, 5);
+  const topRecipes  = getTopN(stats.recipeCounts,  5);
+  const topCuisine  = topCuisines[0];
+  const topRecipe   = topRecipes[0];
+
+  // Update favorite count
+  recordFavoriteCount(favCount);
+
+  const noData = stats.totalSearches === 0;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <!-- Summary cards -->
+    <div class="stats-summary">
+      <div class="stat-card">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-value">${stats.totalSearches}</div>
+        <div class="stat-label">${tx.statSearches}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-value">${stats.favoriteCount}</div>
+        <div class="stat-label">${tx.statFavorites}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🌍</div>
+        <div class="stat-value">${topCuisine ? topCuisine.name : '—'}</div>
+        <div class="stat-label">${tx.statTopCuisine}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-value stat-value-sm">${topRecipe ? topRecipe.name : '—'}</div>
+        <div class="stat-label">${tx.statTopRecipe}</div>
+      </div>
+    </div>
+
+    ${noData ? `<div class="empty-state"><div class="empty-icon">📊</div><h3>${tx.statNoData}</h3></div>` : `
+    <!-- Top Cuisines -->
+    <div class="stats-section">
+      <div class="stats-section-title">${tx.statTopIngredients}</div>
+      <div class="stats-bar-list">
+        ${topCuisines.map((c, i) => {
+          const pct = Math.round((c.count / (topCuisines[0]?.count || 1)) * 100);
+          return `
+            <div class="stats-bar-row">
+              <div class="stats-bar-label">${c.name}</div>
+              <div class="stats-bar-track">
+                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i * 100}ms"></div>
+              </div>
+              <div class="stats-bar-count">${c.count}x</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Top Recipes -->
+    <div class="stats-section">
+      <div class="stats-section-title">${tx.statRecentRecipes}</div>
+      <div class="stats-recipe-list">
+        ${topRecipes.map((r, i) => `
+          <div class="stats-recipe-row">
+            <div class="stats-recipe-rank">${i + 1}</div>
+            <div class="stats-recipe-name">${r.name}</div>
+            <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
+          </div>`).join('')}
+      </div>
+    </div>`}
+
+    <!-- Reset button -->
+    <div style="text-align:center;margin-top:24px">
+      <button class="btn-reset-stats" id="resetStatsBtn">${tx.statReset}</button>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════════════ */
 function openModal(recipe, tx) {
   document.getElementById('modalInner').innerHTML = `
     <div class="modal-header">
       <div>
         <div class="modal-origin-line">
           <span class="modal-origin-badge">🌍 ${recipe.origin}</span>
-          <span style="font-size:12px;color:var(--text-dim)">${recipe.cuisine}</span>
+          <span style="font-size:12px;color:var(--color-text-dim)">${recipe.cuisine}</span>
         </div>
         <h2 class="modal-title" id="modalTitle">${recipe.emoji} ${recipe.title}</h2>
       </div>
@@ -262,33 +311,22 @@ function openModal(recipe, tx) {
         </div>` : ''}
     </div>`;
 
-  const overlay = document.getElementById('modal');
-  overlay.style.display = 'flex';
+  document.getElementById('modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
-
-  // Close button inside modal
   document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
 }
 
-/**
- * Closes the recipe modal.
- */
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.body.style.overflow = '';
 }
 
-/* ── FAVORITES PAGE ── */
-
-/**
- * Renders the favorites page.
- * @param {object[]} favorites
- * @param {object} tx
- */
+/* ══════════════════════════════════════════════════════════
+   FAVORITES PAGE
+══════════════════════════════════════════════════════════ */
 function renderFavorites(favorites, tx) {
-  const titleEl = document.getElementById('favTitle');
-  const words = tx.favPageTitle.split(' ');
-  titleEl.innerHTML = `${words[0]} <span>${words.slice(1).join(' ')}</span>`;
+  const words   = tx.favPageTitle.split(' ');
+  document.getElementById('favTitle').innerHTML    = `${words[0]} <span>${words.slice(1).join(' ')}</span>`;
   document.getElementById('favSubtitle').textContent = tx.favSub;
 
   const grid = document.getElementById('favGrid');
@@ -304,25 +342,32 @@ function renderFavorites(favorites, tx) {
   grid.innerHTML = `<div class="recipe-grid">${favorites.map((r, i) => renderCard(r, i, favorites, tx)).join('')}</div>`;
 }
 
-/* ── TRANSLATIONS ── */
-
-/**
- * Applies all translation strings to the DOM.
- * @param {object} tx
- */
+/* ══════════════════════════════════════════════════════════
+   TRANSLATIONS APPLY
+══════════════════════════════════════════════════════════ */
 function applyTranslations(tx) {
-  document.getElementById('logoTagline').textContent    = tx.tagline;
-  document.getElementById('eyebrow').textContent        = tx.eyebrow;
-  document.getElementById('heroTitle').innerHTML        = tx.heroTitle;
-  document.getElementById('heroSubtitle').textContent   = tx.heroSub;
-  document.getElementById('tabTextLabel').textContent   = tx.tabText;
-  document.getElementById('tabImgLabel').textContent    = tx.tabImg;
-  document.getElementById('findBtnLabel').textContent   = tx.findBtn;
-  document.getElementById('inputHint').textContent      = tx.inputHint;
-  document.getElementById('uploadTitle').textContent    = tx.uploadTitle;
-  document.getElementById('uploadSub').textContent      = tx.uploadSub;
+  document.getElementById('logoTagline').textContent     = tx.tagline;
+  document.getElementById('eyebrow').textContent         = tx.eyebrow;
+  document.getElementById('heroTitle').innerHTML         = tx.heroTitle;
+  document.getElementById('heroSubtitle').textContent    = tx.heroSub;
+  document.getElementById('tabTextLabel').textContent    = tx.tabText;
+  document.getElementById('tabImgLabel').textContent     = tx.tabImg;
+  document.getElementById('findBtnLabel').textContent    = tx.findBtn;
+  document.getElementById('inputHint').textContent       = tx.inputHint;
+  document.getElementById('uploadTitle').textContent     = tx.uploadTitle;
+  document.getElementById('uploadSub').textContent       = tx.uploadSub;
   document.getElementById('analyzeBtnLabel').textContent = tx.analyzeBtn;
-  document.getElementById('langBtn').textContent        = tx.langBtn;
-  document.getElementById('footerText').textContent     = tx.footerText;
+  document.getElementById('langBtn').textContent         = tx.langBtn;
+  document.getElementById('footerText').textContent      = tx.footerText;
+  document.getElementById('nav-home').textContent        = tx.navExplore;
+  document.getElementById('nav-categories').textContent  = tx.navCategories;
+  document.getElementById('nav-stats').textContent       = tx.navStats;
+  document.getElementById('nav-fav').textContent         = tx.navFavorites;
   document.getElementById('ingredientInput').placeholder = tx.inputPlaceholder;
+  document.getElementById('catTitle').innerHTML          = tx.catTitle.includes(' ')
+    ? `${tx.catTitle.split(' ')[0]} <span>${tx.catTitle.split(' ').slice(1).join(' ')}</span>`
+    : tx.catTitle;
+  document.getElementById('catSubtitle').textContent     = tx.catSubtitle;
+  document.getElementById('statsTitle').innerHTML        = `${tx.statsTitle.split(' ')[0]} <span>${tx.statsTitle.split(' ').slice(1).join(' ')}</span>`;
+  document.getElementById('statsSubtitle').textContent   = tx.statsSubtitle;
 }

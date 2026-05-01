@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════
-   SAVORLY — Favorites Module
-   Handles saving/removing favorites using localStorage
+   RECIPIA — Favorites Module
+   Handles saving/loading favorites using localStorage.
 ═══════════════════════════════════════════════════════════ */
 
-const FAVORITES_KEY = 'savorly_favs';
+const FAVORITES_KEY = 'recipia_favs';
 
 /**
  * Loads favorites from localStorage.
@@ -18,7 +18,7 @@ function loadFavorites() {
 }
 
 /**
- * Saves favorites array to localStorage.
+ * Persists the favorites array to localStorage.
  * @param {object[]} favorites
  */
 function saveFavorites(favorites) {
@@ -30,7 +30,7 @@ function saveFavorites(favorites) {
 }
 
 /**
- * Checks if a recipe is in favorites.
+ * Returns true if a recipe ID exists in the favorites list.
  * @param {object[]} favorites
  * @param {string} id
  * @returns {boolean}
@@ -40,16 +40,14 @@ function isFavorite(favorites, id) {
 }
 
 /**
- * Toggles a recipe in the favorites list.
+ * Immutably adds or removes a recipe from the favorites list.
  * @param {object[]} favorites
  * @param {object} recipe
- * @returns {object[]} Updated favorites array
+ * @returns {object[]} New favorites array
  */
 function toggleFavorite(favorites, recipe) {
-  const index = favorites.findIndex(f => f.id === recipe.id);
-  if (index === -1) {
-    return [...favorites, recipe];
-  } else {
-    return favorites.filter(f => f.id !== recipe.id);
-  }
+  const exists = favorites.some(f => f.id === recipe.id);
+  return exists
+    ? favorites.filter(f => f.id !== recipe.id)
+    : [...favorites, recipe];
 }

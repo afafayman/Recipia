@@ -1,97 +1,35 @@
 /* ═══════════════════════════════════════════════════════════
-   SAVORLY — API Module
-   Handles all communication with the backend server
+   RECIPIA — API Module
+   Handles all communication with the backend server,
+   and image file validation.
 ═══════════════════════════════════════════════════════════ */
 
-const API_URL = 'https://recipe-backend-production.up.railway.app/api/ask';
+const API_URL      = 'https://recipe-backend-production.up.railway.app/api/ask';
+const MAX_IMAGE_MB = 5;
 
-// Max image size: 5MB
-const MAX_IMAGE_SIZE_MB = 5;
-
-// Common non-food patterns to reject
-const NON_FOOD_PATTERNS = [
-  /write|poem|story|essay|code|song|joke|lyric/i,
-  /tell\s+me|explain|translate|summarize|describe/i,
-  /what\s+is|who\s+is|how\s+are\s+you/i,
-  /hello+|hi+\s|hey+\s|good\s+(morning|evening|night)/i,
-  /help\s+me\s+(with|to)\s+(?!cook|make|prepare)/i,
-  /^(yes|no|ok|okay|sure|thanks|thank you|please)$/i,
-];
-
-// Known food-related keywords to validate against
-const FOOD_KEYWORDS = [
-  'chicken','beef','lamb','pork','fish','shrimp','egg','tofu','meat','turkey','duck','salmon','tuna',
-  'tomato','potato','onion','garlic','ginger','carrot','pepper','lemon','lime','spinach','broccoli',
-  'mushroom','zucchini','eggplant','cabbage','lettuce','cucumber','celery','corn','pea','bean',
-  'rice','pasta','bread','flour','noodle','oat','wheat','barley',
-  'milk','butter','cream','cheese','yogurt','oil','olive','vinegar','sauce','salt','sugar','honey',
-  'apple','banana','orange','mango','strawberry','grape','avocado','coconut',
-  'cumin','paprika','turmeric','coriander','basil','thyme','oregano','rosemary','cinnamon','curry',
-  'soy','tahini','mayo','ketchup','mustard','stock','broth',
-  // Arabic food words
-  'دجاج','لحم','سمك','بيض','طماطم','بصل','ثوم','أرز','خبز','زيت','ملح','سكر','جبن','لبن','بطاطس',
-  'جزر','فلفل','ليمون','بهارات','كمون','كزبرة','زبدة','طحينة','خيار','باذنجان'
-];
-
-/**
- * Validates that a text input looks like a food ingredient list.
- * @param {string} text
- * @returns {{ valid: boolean, error: string|null }}
- */
-function validateIngredientInput(text) {
-  const trimmed = text.trim();
-
-  if (!trimmed) {
-    return { valid: false, error: 'Please enter at least one ingredient.' };
-  }
-
-  if (trimmed.length < 3) {
-    return { valid: false, error: 'Input is too short. Please enter ingredient names.' };
-  }
-
-  if (trimmed.length > 500) {
-    return { valid: false, error: 'Input is too long. Please keep it under 500 characters.' };
-  }
-
-  // Check for obvious non-food requests
-  for (const pattern of NON_FOOD_PATTERNS) {
-    if (pattern.test(trimmed)) {
-      return { valid: false, error: 'Please enter food ingredients only, like: chicken, garlic, lemon.' };
-    }
-  }
-
-  // Check that at least one word matches a known food keyword
-  const words = trimmed.toLowerCase().split(/[\s,،\n]+/).filter(w => w.length >= 2);
-  const hasFood = words.some(word =>
-    FOOD_KEYWORDS.some(keyword => word.includes(keyword) || keyword.includes(word))
-  );
-
-  if (!hasFood) {
-    return { valid: false, error: 'No food ingredients detected. Please enter ingredient names like: chicken, garlic, rice.' };
-  }
-
-  return { valid: true, error: null };
-}
+/* ══════════════════════════════════════════════════════════
+   VALIDATION
+══════════════════════════════════════════════════════════ */
 
 /**
  * Validates an image file before upload.
  * @param {File} file
- * @returns {{ valid: boolean, error: string|null }}
+ * @returns {{ valid: boolean, errorKey: string|null }}
  */
 function validateImageFile(file) {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
-
-  if (!allowedTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp|heic)$/i)) {
-    return { valid: false, error: `"${file.name}" is not a supported image format. Use JPG, PNG, or WEBP.` };
+  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+  if (!allowed.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp|heic)$/i)) {
+    return { valid: false, errorKey: 'invalidImage' };
   }
-
-  const sizeMB = file.size / (1024 * 1024);
-  if (sizeMB > MAX_IMAGE_SIZE_MB) {
-    return { valid: false, error: `"${file.name}" is too large (${sizeMB.toFixed(1)}MB). Max size is ${MAX_IMAGE_SIZE_MB}MB.` };
+  if (file.size / (1024 * 1024) > MAX_IMAGE_MB) {
+    return { valid: false, errorKey: 'imageTooLarge' };
   }
-
-  return { valid: true, error: null };
+  return { valid: true, errorKey: null };
 }
+
+/* ══════════════════════════════════════════════════════════
+   AI COMMUNICATION
+══════════════════════════════════════════════════════════ */
 
 /**
  * Sends a prompt to the AI backend and returns the text response.
@@ -100,16 +38,13 @@ function validateImageFile(file) {
  */
 async function askAI(prompt) {
   const response = await fetch(API_URL, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt }),
+    body:    JSON.stringify({ prompt }),
   });
 
   const data = await response.json();
-
-  if (data.error) {
-    throw new Error(data.error.message || JSON.stringify(data.error));
-  }
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
   return data.choices?.[0]?.message?.content || '';
 }
@@ -117,10 +52,10 @@ async function askAI(prompt) {
 /**
  * Safely extracts and parses a JSON object from an AI text response.
  * Handles cases where the model adds extra text around the JSON.
- * @param {string} text - Raw AI response text
+ * @param {string} text
  * @returns {object}
  */
-function parseJSON(text) {
+function parseAIResponse(text) {
   const clean = text.replace(/```json|```/g, '').trim();
   const start = clean.indexOf('{');
   const end   = clean.lastIndexOf('}');
@@ -129,14 +64,26 @@ function parseJSON(text) {
 }
 
 /**
- * Asks the AI to identify ingredients from a text description.
- * @param {string[]} ingredients
- * @returns {Promise<object>} Parsed recipe data
+ * Picks a random funny rejection message from translations.
+ * @param {object} tx - current translation object
+ * @returns {string}
  */
-async function fetchRecipes(ingredients, language = 'English') {
+function getRandomRejectionMessage(tx) {
+  const msgs = tx.notFoodMessages;
+  return msgs[Math.floor(Math.random() * msgs.length)];
+}
+
+/**
+ * Fetches recipe suggestions from the AI based on a list of ingredients.
+ * @param {string[]} ingredients
+ * @param {string} language - 'English' or 'Arabic'
+ * @param {object} tx - current translation object (for rejection messages)
+ * @returns {Promise<object>}
+ */
+async function fetchRecipes(ingredients, language = 'English', tx = TRANSLATIONS.en) {
   const prompt = `You are a world-class culinary AI. The user has these ingredients: ${ingredients.join(', ')}
 
-Respond in ${language}. Return ONLY a valid JSON object. No markdown, no code blocks, no explanation before or after.
+Respond in ${language}. Return ONLY a valid JSON object. No markdown, no code blocks, no explanation.
 
 Use exactly this structure:
 {
@@ -148,7 +95,7 @@ Use exactly this structure:
       "emoji": "🍝",
       "origin": "Country Name",
       "cuisine": "Cuisine Type",
-      "description": "A proper sentence with spaces describing the dish. Second sentence here.",
+      "description": "A proper 2-sentence description of the dish.",
       "prepTime": "10 min",
       "cookTime": "20 min",
       "servings": 4,
@@ -159,8 +106,8 @@ Use exactly this structure:
       "allIngredients": [{"name": "ingredient name", "amount": "2 cups", "have": true}],
       "isSmart": false,
       "smartSuggestion": "",
-      "steps": [{"title": "Step Title", "instruction": "Clear instruction with spaces, timing, and technique."}],
-      "tips": "A helpful chef tip with proper spacing.",
+      "steps": [{"title": "Step Title", "instruction": "Clear instruction with timing and technique."}],
+      "tips": "A helpful chef tip.",
       "nutrition": {"calories": 350, "protein": "30g", "carbs": "20g", "fat": "15g"}
     }
   ]
@@ -170,23 +117,31 @@ Rules:
 - Return exactly 6 recipes from different world cuisines
 - All text fields MUST have normal spaces between words
 - matchScore = percentage of user ingredients available, sort by matchScore descending
-- isSmart = true only if user has 70% or more but needs just 1-2 more ingredients
-- The emoji field MUST be a food emoji like 🍝 🍛 🌮 🥘 🍜 🥗 — never a country code or flag
+- isSmart = true only if user has 70%+ but needs just 1-2 more ingredients
+- emoji field MUST be a food emoji like 🍝 🍛 🌮 🥘 🍜 🥗 — never a country code or flag
 - Exactly 5 steps per recipe, each instruction 1-2 clear sentences
-- 5 to 6 ingredients per recipe
+- 5-6 ingredients per recipe
 - Return ONLY the JSON object, nothing else`;
 
-  const text = await askAI(prompt);
-  return parseJSON(text);
+  const text   = await askAI(prompt);
+  const parsed = parseAIResponse(text);
+
+  // AI detected non-food input — throw funny rejection
+  if (parsed.error === 'not_food') {
+    throw new Error('__not_food__');
+  }
+
+  return parsed;
 }
 
 /**
- * Asks the AI to identify ingredients from an image description prompt.
- * @returns {Promise<string[]>} List of detected ingredients
+ * Asks the AI to identify ingredients from a short text prompt.
+ * (Image data is described via prompt since image is uploaded separately)
+ * @returns {Promise<string[]>}
  */
 async function detectIngredientsFromImage() {
-  const prompt = 'List all food ingredients visible. Reply ONLY with minified JSON: {"ingredients":["item1","item2"]}';
-  const text = await askAI(prompt);
-  const parsed = parseJSON(text);
+  const prompt = 'List all food ingredients visible. Reply ONLY with valid JSON: {"ingredients":["item1","item2"]}';
+  const text   = await askAI(prompt);
+  const parsed = parseAIResponse(text);
   return parsed.ingredients || [];
 }
