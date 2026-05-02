@@ -86,7 +86,12 @@ function wireEvents() {
     }
   });
 
-  // Drag and drop
+  // Mobile nav
+  document.getElementById('hamburger').addEventListener('click', openMobileNav);
+  document.getElementById('mobileNavClose').addEventListener('click', closeMobileNav);
+  document.getElementById('mobileNav').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('mobileNav')) closeMobileNav();
+  });
   const dz = document.getElementById('dropZone');
   dz.addEventListener('dragover',  (e) => { e.preventDefault(); dz.classList.add('drag-over'); });
   dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'));
@@ -264,7 +269,20 @@ function refreshCategoryResults() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   IMAGE HANDLING
+   MOBILE NAV
+══════════════════════════════════════════════════════════ */
+function openMobileNav() {
+  document.getElementById('mobileNav').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ══════════════════════════════════════════════════════════
+   DRAG AND DROP
 ══════════════════════════════════════════════════════════ */
 function handleImageUpload(e) { Array.from(e.target.files).forEach(addImageFile); }
 

@@ -364,6 +364,14 @@ function applyTranslations(tx) {
   document.getElementById('nav-stats').textContent       = tx.navStats;
   document.getElementById('nav-fav').textContent         = tx.navFavorites;
   document.getElementById('ingredientInput').placeholder = tx.inputPlaceholder;
+  // Mobile nav labels
+  document.getElementById('mnav-home').textContent       = tx.navExplore;
+  document.getElementById('mnav-categories').textContent = tx.navCategories;
+  document.getElementById('mnav-stats').textContent      = tx.navStats;
+  document.getElementById('mnav-fav').textContent        = tx.navFavorites;
+  document.getElementById('mobileLangBtn').textContent   = tx.langBtn;
+  document.getElementById('mobileThemeBtn').textContent  =
+    document.getElementById('themeBtn').textContent;
   document.getElementById('catTitle').innerHTML          = tx.catTitle.includes(' ')
     ? `${tx.catTitle.split(' ')[0]} <span>${tx.catTitle.split(' ').slice(1).join(' ')}</span>`
     : tx.catTitle;

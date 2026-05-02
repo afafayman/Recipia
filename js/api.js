@@ -4,7 +4,7 @@
    and image file validation.
 ═══════════════════════════════════════════════════════════ */
 
-const API_URL      = 'https://recipe-backend-production.up.railway.app/api/ask';
+const API_URL      = '/api/ask'; // Vercel serverless function
 const MAX_IMAGE_MB = 5;
 
 /* ══════════════════════════════════════════════════════════
