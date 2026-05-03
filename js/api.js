@@ -4,7 +4,7 @@
    and image file validation.
 ═══════════════════════════════════════════════════════════ */
 
-const API_URL      = '/api/ask'; // Vercel serverless function
+const API_URL      = '/api/ask';
 const MAX_IMAGE_MB = 5;
 
 /* ══════════════════════════════════════════════════════════
@@ -33,14 +33,14 @@ function validateImageFile(file) {
 
 /**
  * Sends a prompt to the AI backend and returns the text response.
- * @param {string} prompt
+ * @param {string|Array} prompt - string for text, array for images
  * @returns {Promise<string>}
  */
 async function askAI(prompt) {
   const response = await fetch(API_URL, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ prompt }),
+    body:    JSON.stringify({ prompt: typeof prompt === 'string' ? prompt : JSON.stringify(prompt) }),
   });
 
   const data = await response.json();
@@ -75,9 +75,9 @@ function getRandomRejectionMessage(tx) {
 /**
  * Fetches recipe suggestions from the AI based on a list of ingredients.
  * @param {string[]} ingredients
- * @param {string} language - 'English' or 'Arabic'
- * @param {object} tx - current translation object
- * @param {string|null} cuisineFilter - force all recipes to be from this cuisine
+ * @param {string} language
+ * @param {object} tx
+ * @param {string|null} cuisineFilter
  * @returns {Promise<object>}
  */
 async function fetchRecipes(ingredients, language = 'English', tx = TRANSLATIONS.en, cuisineFilter = null) {
@@ -139,12 +139,23 @@ Rules:
 }
 
 /**
- * Asks the AI to identify ingredients from a short text prompt.
+ * Asks the AI to identify ingredients from uploaded images.
+ * @param {Array<{dataUrl: string}>} images
  * @returns {Promise<string[]>}
  */
-async function detectIngredientsFromImage() {
-  const prompt = 'List all food ingredients visible. Reply ONLY with valid JSON: {"ingredients":["item1","item2"]}';
-  const text   = await askAI(prompt);
+async function detectIngredientsFromImage(images) {
+  const imageContents = images.map(img => {
+    const [header, data] = img.dataUrl.split(',');
+    const mediaType      = header.match(/:(.*?);/)[1];
+    return { type: 'image_url', image_url: { url: `data:${mediaType};base64,${data}` } };
+  });
+
+  const content = [
+    ...imageContents,
+    { type: 'text', text: 'List all food ingredients you can see in these images. Reply ONLY with valid JSON: {"ingredients":["item1","item2"]}' }
+  ];
+
+  const text   = await askAI(content);
   const parsed = parseAIResponse(text);
   return parsed.ingredients || [];
 }

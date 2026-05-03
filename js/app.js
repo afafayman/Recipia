@@ -216,7 +216,7 @@ async function handleAnalyseImages() {
   updateLoadingMsg(t().loading1);
 
   try {
-    const ingredients = await detectIngredientsFromImage();
+    const ingredients = await detectIngredientsFromImage(state.uploadedImages);
     const lang        = state.currentLang === 'ar' ? 'Arabic' : 'English';
     const data        = await fetchRecipes(ingredients, lang, t());
     state.allRecipes          = data.recipes;
