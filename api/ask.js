@@ -9,9 +9,9 @@ const API_KEYS = [
   process.env.GROQ_API_KEY_1,
   process.env.GROQ_API_KEY_2,
   process.env.GROQ_API_KEY_3,
-].filter(Boolean); // removes any undefined keys
+].filter(Boolean);
 
-// Round robin counter (resets per cold start — that's fine)
+// Round robin counter
 let currentKeyIndex = 0;
 
 /**
@@ -19,7 +19,7 @@ let currentKeyIndex = 0;
  * @returns {string}
  */
 function getNextKey() {
-  const key    = API_KEYS[currentKeyIndex];
+  const key = API_KEYS[currentKeyIndex];
   currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
   return key;
 }
@@ -59,7 +59,6 @@ Do NOT generate recipes for non-food input under ANY circumstances, in ANY langu
 
   const data = await response.json();
 
-  // Check if this key hit the rate limit
   if (data.error?.type === 'rate_limit_exceeded' || response.status === 429) {
     throw new Error('rate_limit');
   }
@@ -67,7 +66,7 @@ Do NOT generate recipes for non-food input under ANY circumstances, in ANY langu
   return data;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Handle CORS preflight
   res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -83,8 +82,6 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'No API keys configured' });
   }
 
-  // Try each key — start from current round robin position
-  // If rate limited, move to next key automatically
   const startIndex = currentKeyIndex;
 
   for (let attempt = 0; attempt < API_KEYS.length; attempt++) {
@@ -93,23 +90,18 @@ module.exports = async function handler(req, res) {
 
     try {
       const data = await callGroq(prompt, apiKey);
-      // Success — advance the round robin for next request
       currentKeyIndex = (keyIndex + 1) % API_KEYS.length;
       return res.status(200).json(data);
-
     } catch (err) {
       if (err.message === 'rate_limit') {
-        // This key is rate limited — try the next one
         console.log(`Key ${keyIndex + 1} rate limited, trying next...`);
         continue;
       }
-      // Different error — return it
       return res.status(500).json({ error: err.message });
     }
   }
 
-  // All keys are rate limited
   return res.status(429).json({
     error: 'All API keys are currently rate limited. Please try again in a minute.'
   });
-};
+}
