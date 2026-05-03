@@ -2,7 +2,7 @@
 
 > Recipe discovery web application that suggests personalized recipes from world cuisines based on the ingredients you already have at home.
 
-**Live Demo:** [recipia.netlify.app](https://recipiaa.netlify.app)
+**Live Demo:** [RECIPIA](https://recipiaa.vercel.app/)
 
 ---
 
