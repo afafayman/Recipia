@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    RECIPIA — API Module
-   Handles all communication with the backend server,
+   Handles all communication with the backend server
    and image file validation.
 ═══════════════════════════════════════════════════════════ */
 
@@ -8,7 +8,7 @@ const API_URL      = '/api/ask'; // Vercel serverless function
 const MAX_IMAGE_MB = 5;
 
 /* ══════════════════════════════════════════════════════════
-   VALIDATION
+   IMAGE VALIDATION
 ══════════════════════════════════════════════════════════ */
 
 /**
@@ -51,7 +51,6 @@ async function askAI(prompt) {
 
 /**
  * Safely extracts and parses a JSON object from an AI text response.
- * Handles cases where the model adds extra text around the JSON.
  * @param {string} text
  * @returns {object}
  */
@@ -65,7 +64,7 @@ function parseAIResponse(text) {
 
 /**
  * Picks a random funny rejection message from translations.
- * @param {object} tx - current translation object
+ * @param {object} tx
  * @returns {string}
  */
 function getRandomRejectionMessage(tx) {
@@ -77,11 +76,17 @@ function getRandomRejectionMessage(tx) {
  * Fetches recipe suggestions from the AI based on a list of ingredients.
  * @param {string[]} ingredients
  * @param {string} language - 'English' or 'Arabic'
- * @param {object} tx - current translation object (for rejection messages)
+ * @param {object} tx - current translation object
+ * @param {string|null} cuisineFilter - force all recipes to be from this cuisine
  * @returns {Promise<object>}
  */
-async function fetchRecipes(ingredients, language = 'English', tx = TRANSLATIONS.en) {
+async function fetchRecipes(ingredients, language = 'English', tx = TRANSLATIONS.en, cuisineFilter = null) {
+  const cuisineInstruction = cuisineFilter
+    ? `IMPORTANT: ALL 6 recipes MUST be exclusively from ${cuisineFilter} cuisine. Do not suggest recipes from any other cuisine under any circumstances.`
+    : '';
+
   const prompt = `You are a world-class culinary AI. The user has these ingredients: ${ingredients.join(', ')}
+${cuisineInstruction}
 
 Respond in ${language}. Return ONLY a valid JSON object. No markdown, no code blocks, no explanation.
 
@@ -114,11 +119,11 @@ Use exactly this structure:
 }
 
 Rules:
-- Return exactly 6 recipes from different world cuisines
+- Return exactly 6 recipes from different countries within the requested cuisine
 - All text fields MUST have normal spaces between words
 - matchScore = percentage of user ingredients available, sort by matchScore descending
 - isSmart = true only if user has 70%+ but needs just 1-2 more ingredients
-- emoji field MUST be a food emoji like 🍝 🍛 🌮 🥘 🍜 🥗 — never a country code or flag
+- emoji field MUST be a food emoji matching the dish — never a country code or flag
 - Exactly 5 steps per recipe, each instruction 1-2 clear sentences
 - 5-6 ingredients per recipe
 - Return ONLY the JSON object, nothing else`;
@@ -126,7 +131,6 @@ Rules:
   const text   = await askAI(prompt);
   const parsed = parseAIResponse(text);
 
-  // AI detected non-food input — throw funny rejection
   if (parsed.error === 'not_food') {
     throw new Error('__not_food__');
   }
@@ -136,7 +140,6 @@ Rules:
 
 /**
  * Asks the AI to identify ingredients from a short text prompt.
- * (Image data is described via prompt since image is uploaded separately)
  * @returns {Promise<string[]>}
  */
 async function detectIngredientsFromImage() {

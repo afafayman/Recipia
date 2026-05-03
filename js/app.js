@@ -78,7 +78,7 @@ function wireEvents() {
     if (e.key === 'Enter' && e.target.dataset.catId) handleCategorySelect(e.target.dataset.catId);
   });
 
-  // Stats page delegation (reset button)
+  // Stats reset button
   document.getElementById('statsGrid').addEventListener('click', (e) => {
     if (e.target.id === 'resetStatsBtn') {
       clearStats();
@@ -92,6 +92,8 @@ function wireEvents() {
   document.getElementById('mobileNav').addEventListener('click', (e) => {
     if (e.target === document.getElementById('mobileNav')) closeMobileNav();
   });
+
+  // Drag and drop
   const dz = document.getElementById('dropZone');
   dz.addEventListener('dragover',  (e) => { e.preventDefault(); dz.classList.add('drag-over'); });
   dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'));
@@ -106,6 +108,19 @@ function wireEvents() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   MOBILE NAV
+══════════════════════════════════════════════════════════ */
+function openMobileNav() {
+  document.getElementById('mobileNav').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ══════════════════════════════════════════════════════════
    EVENT HANDLERS — HOME RESULTS
 ══════════════════════════════════════════════════════════ */
 function handleResultsClick(e) {
@@ -114,7 +129,7 @@ function handleResultsClick(e) {
   const card      = e.target.closest('.recipe-card');
   const filterBtn = e.target.closest('[data-filter]');
 
-  if (favBtn)    { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
+  if (favBtn)        { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
   else if (viewBtn)  { e.stopPropagation(); handleOpenModal(viewBtn.dataset.view); }
   else if (card)     { handleOpenModal(card.dataset.id); }
   else if (filterBtn){ state.filters.difficulty = filterBtn.dataset.filter; refreshResults(); }
@@ -133,7 +148,7 @@ function handleCategoryResultsClick(e) {
   const card      = e.target.closest('.recipe-card');
   const filterBtn = e.target.closest('[data-filter]');
 
-  if (favBtn)    { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
+  if (favBtn)        { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
   else if (viewBtn)  { e.stopPropagation(); handleOpenModalFromCategory(viewBtn.dataset.view); }
   else if (card)     { handleOpenModalFromCategory(card.dataset.id); }
   else if (filterBtn){ state.categoryFilters.difficulty = filterBtn.dataset.filter; refreshCategoryResults(); }
@@ -159,7 +174,7 @@ function handleFavGridClick(e) {
   const viewBtn = e.target.closest('[data-view]');
   const card    = e.target.closest('.recipe-card');
 
-  if (favBtn)   { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
+  if (favBtn)       { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
   else if (viewBtn) { e.stopPropagation(); handleOpenModal(viewBtn.dataset.view, true); }
   else if (card)    { handleOpenModal(card.dataset.id, true); }
 }
@@ -242,8 +257,9 @@ async function handleCategorySelect(catId) {
   showCategoryLoading(catName, t());
 
   try {
-    const lang = state.currentLang === 'ar' ? 'Arabic' : 'English';
-    const data = await fetchRecipes(cat.ingredient.split(', '), lang, t());
+    const lang        = state.currentLang === 'ar' ? 'Arabic' : 'English';
+    const cuisineName = state.currentLang === 'ar' ? cat.nameAr : cat.name;
+    const data        = await fetchRecipes(cat.ingredient.split(', '), lang, t(), cuisineName);
     state.categoryRecipes = data.recipes;
     recordSearch(data.recipes);
     renderResults(data, state.favorites, state.categoryFilters, t(), 'categoryResults');
@@ -269,20 +285,7 @@ function refreshCategoryResults() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MOBILE NAV
-══════════════════════════════════════════════════════════ */
-function openMobileNav() {
-  document.getElementById('mobileNav').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeMobileNav() {
-  document.getElementById('mobileNav').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-/* ══════════════════════════════════════════════════════════
-   DRAG AND DROP
+   IMAGE HANDLING
 ══════════════════════════════════════════════════════════ */
 function handleImageUpload(e) { Array.from(e.target.files).forEach(addImageFile); }
 
@@ -389,7 +392,8 @@ function toggleTheme() { setTheme(state.currentTheme === 'light' ? 'dark' : 'lig
 function setTheme(theme) {
   state.currentTheme = theme;
   document.documentElement.setAttribute('data-theme', theme);
-  document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').textContent       = theme === 'dark' ? '☀️' : '🌙';
+  document.getElementById('mobileThemeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
   localStorage.setItem('recipia_theme', theme);
 }
 
