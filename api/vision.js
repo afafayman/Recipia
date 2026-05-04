@@ -11,7 +11,7 @@ const GEMINI_KEYS = [
 ].filter(Boolean);
 
 const GEMINI_URL = (key) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`;
 
 let currentKeyIndex = 0;
 
