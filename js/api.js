@@ -139,23 +139,28 @@ Rules:
 }
 
 /**
- * Asks the AI to identify ingredients from uploaded images.
+ * Asks Gemini Vision API to identify ingredients from uploaded images.
+ * Gemini supports vision — Groq does not.
  * @param {Array<{dataUrl: string}>} images
  * @returns {Promise<string[]>}
  */
 async function detectIngredientsFromImage(images) {
-  const imageContents = images.map(img => {
+  // Convert dataUrls to base64 + mediaType for Gemini
+  const processedImages = images.map(img => {
     const [header, data] = img.dataUrl.split(',');
     const mediaType      = header.match(/:(.*?);/)[1];
-    return { type: 'image_url', image_url: { url: `data:${mediaType};base64,${data}` } };
+    return { mediaType, data };
   });
 
-  const content = [
-    ...imageContents,
-    { type: 'text', text: 'List all food ingredients you can see in these images. Reply ONLY with valid JSON: {"ingredients":["item1","item2"]}' }
-  ];
+  const response = await fetch('/api/vision', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ images: processedImages }),
+  });
 
-  const text   = await askAI(content);
-  const parsed = parseAIResponse(text);
+  const result = await response.json();
+  if (result.error) throw new Error(result.error);
+
+  const parsed = parseAIResponse(result.text);
   return parsed.ingredients || [];
 }
