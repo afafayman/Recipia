@@ -386,9 +386,14 @@ function showPage(page) {
     const el = document.getElementById(`page-${p}`);
     if (el) el.classList.toggle('active', p === page);
   });
-  if (page === 'favorites')  renderFavorites(state.favorites, t());
-  if (page === 'categories') renderCategoryGrid(state.currentLang);
-  if (page === 'stats')      renderStatsPage(t(), state.favorites.length);
+
+  // Render after DOM is visible
+  requestAnimationFrame(() => {
+    if (page === 'favorites')  renderFavorites(state.favorites, t());
+    if (page === 'categories') renderCategoryGrid(state.currentLang);
+    if (page === 'stats')      renderStatsPage(t(), state.favorites.length);
+  });
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
