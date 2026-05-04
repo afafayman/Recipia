@@ -60,7 +60,7 @@ const TRANSLATIONS = {
     catSubtitle:       'Pick a cuisine and discover recipes instantly',
     catLoading:        'Loading recipes for',
     // Stats page
-    statsTitle:        'Your Stats',
+    statsGlobal:       'Global stats — from all users worldwide',
     statsSubtitle:     'Your personal Recipia activity',
     statSearches:      'Total Searches',
     statFavorites:     'Saved Favorites',
@@ -155,7 +155,7 @@ const TRANSLATIONS = {
     catSubtitle:       'اختر مطبخاً واكتشف الوصفات فوراً',
     catLoading:        'جاري تحميل وصفات',
     // Stats page
-    statsTitle:        'إحصائياتك',
+    statsGlobal:       'إحصائيات عالمية — من كل المستخدمين حول العالم',
     statsSubtitle:     'نشاطك الشخصي على ريسيبيا',
     statSearches:      'إجمالي عمليات البحث',
     statFavorites:     'المفضلة المحفوظة',

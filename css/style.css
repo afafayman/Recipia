@@ -722,7 +722,16 @@ footer {
 .stats-recipe-name  { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
 .stats-recipe-count { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; white-space: nowrap; }
 
-.btn-reset-stats {
+.stats-global-banner {
+  background: linear-gradient(135deg, rgba(244,132,95,0.08), rgba(123,201,160,0.08));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  text-align: center;
+}
   background: none;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);

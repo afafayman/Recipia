@@ -192,12 +192,29 @@ async function handleFindRecipes() {
 
   try {
     const lang = state.currentLang === 'ar' ? 'Arabic' : 'English';
-    const data = await fetchRecipes(ingredients, lang, t());
+
+    // 1. Check Supabase cache first
+    let data = await getCachedRecipes(ingredients);
+
+    if (data) {
+      // Cache hit — no AI call needed
+      updateLoadingMsg('Loading from cache…');
+    } else {
+      // Cache miss — call AI
+      data = await fetchRecipes(ingredients, lang, t());
+      // Save to cache silently
+      cacheRecipes(ingredients, data);
+    }
+
+    // Track globally
+    trackSearch(data.recipes);
+
     state.allRecipes          = data.recipes;
     state.detectedIngredients = data.detectedIngredients;
     state.filters             = { difficulty: 'all', search: '' };
-    recordSearch(data.recipes);
+    recordSearch(data.recipes); // local stats
     renderResults(data, state.favorites, state.filters, t());
+
   } catch (err) {
     if (err.message === '__not_food__') {
       showError(t().notFoodTitle, getRandomRejectionMessage(t()));
@@ -345,7 +362,11 @@ function handleToggleFav(id) {
 function handleOpenModal(id, fromFav = false) {
   const pool   = fromFav ? state.favorites : [...state.allRecipes, ...state.favorites];
   const recipe = pool.find(r => r.id === id);
-  if (recipe) { recordRecipeOpen(recipe.title); openModal(recipe, t()); }
+  if (recipe) {
+    recordRecipeOpen(recipe.title);           // local stats
+    trackRecipeOpen(recipe.title, recipe.emoji); // global stats
+    openModal(recipe, t());
+  }
 }
 
 function refreshResults() {

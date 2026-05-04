@@ -169,29 +169,43 @@ function showCategoryLoading(catName, tx) {
 /* ══════════════════════════════════════════════════════════
    STATS PAGE
 ══════════════════════════════════════════════════════════ */
-function renderStatsPage(tx, favCount) {
-  const stats       = loadStats();
-  const topCuisines = getTopN(stats.cuisineCounts, 5);
-  const topRecipes  = getTopN(stats.recipeCounts,  5);
-  const topCuisine  = topCuisines[0];
-  const topRecipe   = topRecipes[0];
+async function renderStatsPage(tx, favCount) {
+  const grid = document.getElementById('statsGrid');
 
-  // Update favorite count
+  // Show loading state first
+  grid.innerHTML = `
+    <div class="loading-state" style="padding:40px">
+      <div class="chef-spinner">👨‍🍳</div>
+      <h3 style="color:var(--coral)">Loading stats…</h3>
+    </div>`;
+
+  // Fetch global stats from Supabase
+  const global  = await fetchGlobalStats();
+  const local   = loadStats();
   recordFavoriteCount(favCount);
 
-  const noData = stats.totalSearches === 0;
+  const topCuisines = getTopNGlobal(global.cuisineCounts, 5);
+  const topRecipes  = getTopNGlobal(global.recipeCounts,  5);
+  const topCuisine  = topCuisines[0];
+  const topRecipe   = topRecipes[0];
+  const noData      = global.totalSearches === 0;
 
-  document.getElementById('statsGrid').innerHTML = `
+  grid.innerHTML = `
+    <!-- Global banner -->
+    <div class="stats-global-banner">
+      🌍 ${tx.statsGlobal || 'Global stats — from all users worldwide'}
+    </div>
+
     <!-- Summary cards -->
     <div class="stats-summary">
       <div class="stat-card">
         <div class="stat-icon">🔍</div>
-        <div class="stat-value">${stats.totalSearches}</div>
+        <div class="stat-value">${global.totalSearches}</div>
         <div class="stat-label">${tx.statSearches}</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">❤️</div>
-        <div class="stat-value">${stats.favoriteCount}</div>
+        <div class="stat-value">${local.favoriteCount}</div>
         <div class="stat-label">${tx.statFavorites}</div>
       </div>
       <div class="stat-card">
@@ -201,12 +215,19 @@ function renderStatsPage(tx, favCount) {
       </div>
       <div class="stat-card">
         <div class="stat-icon">🏆</div>
-        <div class="stat-value stat-value-sm">${topRecipe ? topRecipe.name : '—'}</div>
+        <div class="stat-value stat-value-sm">
+          ${topRecipe ? (global.recipeEmojis?.[topRecipe.name] || '') + ' ' + topRecipe.name : '—'}
+        </div>
         <div class="stat-label">${tx.statTopRecipe}</div>
       </div>
     </div>
 
-    ${noData ? `<div class="empty-state"><div class="empty-icon">📊</div><h3>${tx.statNoData}</h3></div>` : `
+    ${noData ? `
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>${tx.statNoData}</h3>
+      </div>` : `
+
     <!-- Top Cuisines -->
     <div class="stats-section">
       <div class="stats-section-title">${tx.statTopIngredients}</div>
@@ -232,16 +253,18 @@ function renderStatsPage(tx, favCount) {
         ${topRecipes.map((r, i) => `
           <div class="stats-recipe-row">
             <div class="stats-recipe-rank">${i + 1}</div>
-            <div class="stats-recipe-name">${r.name}</div>
+            <div class="stats-recipe-name">
+              ${global.recipeEmojis?.[r.name] || ''} ${r.name}
+            </div>
             <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
           </div>`).join('')}
       </div>
     </div>`}
 
-    <!-- Reset button -->
     <div style="text-align:center;margin-top:24px">
       <button class="btn-reset-stats" id="resetStatsBtn">${tx.statReset}</button>
     </div>`;
+}
 }
 
 /* ══════════════════════════════════════════════════════════
