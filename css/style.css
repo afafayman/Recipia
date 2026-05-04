@@ -469,11 +469,67 @@ nav {
 
 .card-header { padding: 16px 16px 0; display: flex; align-items: flex-start; justify-content: space-between; padding-right: 48px; }
 .card-origin { display: inline-flex; align-items: center; gap: 5px; background: rgba(123,201,160,0.12); border: 1px solid rgba(123,201,160,0.3); border-radius: 100px; padding: 4px 11px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mint-dim); }
-.card-badges { display: flex; gap: 5px; flex-wrap: wrap; }
-.badge { padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+/* Fix badge styling on cards */
+.badge {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+  display: inline-flex; align-items: center;
+}
 .badge.time  { background: rgba(245,200,66,0.15); color: var(--gold-dim); }
-.badge.diff  { background: rgba(244,132,95,0.10); color: var(--coral); }
+.badge.diff  { background: rgba(244,132,95,0.12); color: var(--coral); border: 1px solid rgba(244,132,95,0.2); }
 .badge.smart { background: rgba(123,201,160,0.15); color: var(--mint-dim); }
+
+/* Fix footer layout */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--text-dim);
+  font-size: 13px;
+  background: var(--surface);
+}
+.footer-love {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.footer-love span { color: var(--coral); }
+
+/* Fix modal meta cards equal size */
+.modal-meta {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.meta-item {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+}
+.meta-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'Playfair Display', serif;
+  word-break: break-word;
+}
+.meta-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-top: 2px;
+}
 
 .card-emoji { font-size: 52px; text-align: center; padding: 12px 12px 4px; display: block; line-height: 1; }
 .card-body { padding: 0 16px 16px; }
