@@ -267,7 +267,6 @@ async function renderStatsPage(tx, favCount) {
       <button class="btn-reset-stats" id="resetStatsBtn">${tx.statReset}</button>
     </div>`;
 }
-}
 
 /* ══════════════════════════════════════════════════════════
    MODAL
