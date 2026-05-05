@@ -369,37 +369,67 @@ function renderFavorites(favorites, tx) {
 /* ══════════════════════════════════════════════════════════
    TRANSLATIONS APPLY
 ══════════════════════════════════════════════════════════ */
+function safeSet(id, value, isHTML = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (isHTML) el.innerHTML = value;
+  else el.textContent = value;
+}
+
+function splitTitle(text) {
+  if (!text) return ["", ""];
+  const parts = text.split(" ");
+  return [parts[0], parts.slice(1).join(" ")];
+}
+
 function applyTranslations(tx) {
-  document.getElementById('logoTagline').textContent     = tx.tagline;
-  document.getElementById('eyebrow').textContent         = tx.eyebrow;
-  document.getElementById('heroTitle').innerHTML         = tx.heroTitle;
-  document.getElementById('heroSubtitle').textContent    = tx.heroSub;
-  document.getElementById('tabTextLabel').textContent    = tx.tabText;
-  document.getElementById('tabImgLabel').textContent     = tx.tabImg;
-  document.getElementById('findBtnLabel').textContent    = tx.findBtn;
-  document.getElementById('inputHint').textContent       = tx.inputHint;
-  document.getElementById('uploadTitle').textContent     = tx.uploadTitle;
-  document.getElementById('uploadSub').textContent       = tx.uploadSub;
-  document.getElementById('analyzeBtnLabel').textContent = tx.analyzeBtn;
-  document.getElementById('langBtn').textContent         = tx.langBtn;
-  document.getElementById('footerText').textContent      = tx.footerText;
-  document.getElementById('nav-home').textContent        = tx.navExplore;
-  document.getElementById('nav-categories').textContent  = tx.navCategories;
-  document.getElementById('nav-stats').textContent       = tx.navStats;
-  document.getElementById('nav-fav').textContent         = tx.navFavorites;
-  document.getElementById('ingredientInput').placeholder = tx.inputPlaceholder;
-  // Mobile nav labels
-  document.getElementById('mnav-home').textContent       = tx.navExplore;
-  document.getElementById('mnav-categories').textContent = tx.navCategories;
-  document.getElementById('mnav-stats').textContent      = tx.navStats;
-  document.getElementById('mnav-fav').textContent        = tx.navFavorites;
-  document.getElementById('mobileLangBtn').textContent   = tx.langBtn;
-  document.getElementById('mobileThemeBtn').textContent  =
-    document.getElementById('themeBtn').textContent;
-  document.getElementById('catTitle').innerHTML          = tx.catTitle.includes(' ')
-    ? `${tx.catTitle.split(' ')[0]} <span>${tx.catTitle.split(' ').slice(1).join(' ')}</span>`
-    : tx.catTitle;
-  document.getElementById('catSubtitle').textContent     = tx.catSubtitle;
-  document.getElementById('statsTitle').innerHTML        = `${tx.statsTitle.split(' ')[0]} <span>${tx.statsTitle.split(' ').slice(1).join(' ')}</span>`;
-  document.getElementById('statsSubtitle').textContent   = tx.statsSubtitle;
+  safeSet('logoTagline', tx.tagline);
+
+  safeSet('eyebrow', tx.eyebrow);
+  safeSet('heroTitle', tx.heroTitle, true);
+  safeSet('heroSubtitle', tx.heroSub);
+
+  safeSet('tabTextLabel', tx.tabText);
+  safeSet('tabImgLabel', tx.tabImg);
+
+  safeSet('findBtnLabel', tx.findBtn);
+  safeSet('inputHint', tx.inputHint);
+  safeSet('uploadTitle', tx.uploadTitle);
+  safeSet('uploadSub', tx.uploadSub);
+  safeSet('analyzeBtnLabel', tx.analyzeBtn);
+  safeSet('langBtn', tx.langBtn);
+
+  const input = document.getElementById('ingredientInput');
+  if (input) input.placeholder = tx.inputPlaceholder;
+
+  safeSet('nav-home', tx.navExplore);
+  safeSet('nav-categories', tx.navCategories);
+  safeSet('nav-stats', tx.navStats);
+  safeSet('nav-fav', tx.navFavorites);
+
+  safeSet('mnav-home', tx.navExplore);
+  safeSet('mnav-categories', tx.navCategories);
+  safeSet('mnav-stats', tx.navStats);
+  safeSet('mnav-fav', tx.navFavorites);
+  safeSet('mobileLangBtn', tx.langBtn);
+
+  const themeBtn = document.getElementById('themeBtn');
+  const mobileThemeBtn = document.getElementById('mobileThemeBtn');
+  if (themeBtn && mobileThemeBtn) {
+    mobileThemeBtn.textContent = themeBtn.textContent;
+  }
+
+  // Categories
+  const [catMain, catSub] = splitTitle(tx.catTitle);
+  safeSet('catTitleMain', catMain);
+  safeSet('catTitleSub', catSub);
+  safeSet('catSubtitle', tx.catSubtitle);
+
+  // Stats
+  const [statsMain, statsSub] = splitTitle(tx.statsTitle);
+  safeSet('statsTitleMain', statsMain);
+  safeSet('statsTitleSub', statsSub);
+  safeSet('statsSubtitle', tx.statsSubtitle);
+
+  safeSet('footerText', tx.footerText);
 }
