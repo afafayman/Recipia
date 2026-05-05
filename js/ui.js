@@ -149,6 +149,8 @@ function renderCard(recipe, index, favorites, tx) {
 ══════════════════════════════════════════════════════════ */
 function renderCategoryGrid(lang) {
   const grid = document.getElementById('categoryGrid');
+  if (!grid) return;
+  if (!CATEGORIES || !CATEGORIES.length) return;
   grid.innerHTML = CATEGORIES.map(cat => `
     <div class="category-card" data-cat-id="${cat.id}" role="button" tabindex="0"
       aria-label="${lang === 'ar' ? cat.nameAr : cat.name}">

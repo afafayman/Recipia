@@ -193,26 +193,25 @@ async function handleFindRecipes() {
   try {
     const lang = state.currentLang === 'ar' ? 'Arabic' : 'English';
 
-    // 1. Check Supabase cache first
-    let data = await getCachedRecipes(ingredients);
+    // Check cache first — if it fails, just call AI
+    let data = null;
+    try {
+      data = await getCachedRecipes(ingredients);
+    } catch { data = null; }
 
-    if (data) {
-      // Cache hit — no AI call needed
-      updateLoadingMsg('Loading from cache…');
-    } else {
-      // Cache miss — call AI
+    if (!data) {
       data = await fetchRecipes(ingredients, lang, t());
-      // Save to cache silently
-      cacheRecipes(ingredients, data);
+      // Save to cache silently — don't await
+      cacheRecipes(ingredients, data).catch(() => {});
     }
 
-    // Track globally
-    trackSearch(data.recipes);
+    // Track globally — don't await
+    trackSearch(data.recipes).catch(() => {});
 
     state.allRecipes          = data.recipes;
     state.detectedIngredients = data.detectedIngredients;
     state.filters             = { difficulty: 'all', search: '' };
-    recordSearch(data.recipes); // local stats
+    recordSearch(data.recipes);
     renderResults(data, state.favorites, state.filters, t());
 
   } catch (err) {
