@@ -10,10 +10,10 @@ const state = {
   allRecipes:          [],
   detectedIngredients: [],
   favorites:           loadFavorites(),
-  filters:             { difficulty: 'all', search: '' },
+  filters:             { difficulty:'all', search:'' },
   activeCategoryId:    null,
   categoryRecipes:     [],
-  categoryFilters:     { difficulty: 'all', search: '' },
+  categoryFilters:     { difficulty:'all', search:'' },
 };
 
 const t = () => TRANSLATIONS[state.currentLang];
@@ -34,7 +34,7 @@ function restorePreferences() {
   applyTranslations(t());
 }
 
-/* ── WIRE EVENTS ── */
+/* ── WIRE ALL EVENTS ── */
 function wireEvents() {
   // Logo
   document.getElementById('logoBtn').addEventListener('click', () => showPage('home'));
@@ -45,22 +45,22 @@ function wireEvents() {
   document.getElementById('nav-stats').addEventListener('click',      () => showPage('stats'));
   document.getElementById('nav-fav').addEventListener('click',        () => showPage('favorites'));
 
-  // Theme & Lang
-  document.getElementById('themeBtn').addEventListener('click',      toggleTheme);
-  document.getElementById('langBtn').addEventListener('click',       toggleLang);
-  document.getElementById('mobileThemeBtn').addEventListener('click',toggleTheme);
-  document.getElementById('mobileLangBtn').addEventListener('click', toggleLang);
+  // Theme & Lang buttons (desktop + mobile)
+  document.getElementById('themeBtn').addEventListener('click',       toggleTheme);
+  document.getElementById('langBtn').addEventListener('click',        toggleLang);
+  document.getElementById('mobileThemeBtn').addEventListener('click', toggleTheme);
+  document.getElementById('mobileLangBtn').addEventListener('click',  toggleLang);
 
-  // Mobile nav
-  document.getElementById('hamburger').addEventListener('click',       openMobileNav);
-  document.getElementById('mobileNavClose').addEventListener('click',  closeMobileNav);
+  // Hamburger mobile nav
+  document.getElementById('hamburger').addEventListener('click', openMobileNav);
+  document.getElementById('mobileNavClose').addEventListener('click', closeMobileNav);
   document.getElementById('mobileNav').addEventListener('click', (e) => {
     if (e.target === document.getElementById('mobileNav')) closeMobileNav();
   });
-  document.getElementById('mnav-home-btn').addEventListener('click',       () => { showPage('home');       closeMobileNav(); });
-  document.getElementById('mnav-categories-btn').addEventListener('click', () => { showPage('categories'); closeMobileNav(); });
-  document.getElementById('mnav-stats-btn').addEventListener('click',      () => { showPage('stats');      closeMobileNav(); });
-  document.getElementById('mnav-fav-btn').addEventListener('click',        () => { showPage('favorites');  closeMobileNav(); });
+  document.getElementById('mnav-home-btn').addEventListener('click',  () => { showPage('home');       closeMobileNav(); });
+  document.getElementById('mnav-cat-btn').addEventListener('click',   () => { showPage('categories'); closeMobileNav(); });
+  document.getElementById('mnav-stats-btn').addEventListener('click', () => { showPage('stats');      closeMobileNav(); });
+  document.getElementById('mnav-fav-btn').addEventListener('click',   () => { showPage('favorites');  closeMobileNav(); });
 
   // Search
   document.getElementById('findBtn').addEventListener('click', handleFindRecipes);
@@ -72,9 +72,9 @@ function wireEvents() {
   document.getElementById('tab-text').addEventListener('click',  () => switchTab('text'));
   document.getElementById('tab-image').addEventListener('click', () => switchTab('image'));
 
-  // Image upload
-  document.getElementById('imgInput').addEventListener('change',   handleImageUpload);
-  document.getElementById('analyzeBtn').addEventListener('click',  handleAnalyseImages);
+  // Image
+  document.getElementById('imgInput').addEventListener('change',  handleImageUpload);
+  document.getElementById('analyzeBtn').addEventListener('click', handleAnalyseImages);
 
   // Drag & drop
   const dz = document.getElementById('dropZone');
@@ -82,27 +82,22 @@ function wireEvents() {
   dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'));
   dz.addEventListener('drop',      handleDrop);
 
-  // Modal close
+  // Modal
   document.getElementById('modal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal')) closeModal();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
   // Results delegation
-  document.getElementById('results').addEventListener('click',  handleResultsClick);
-  document.getElementById('results').addEventListener('input',  handleResultsInput);
-  document.getElementById('results').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target.classList.contains('recipe-card')) handleOpenModal(e.target.dataset.id);
-  });
+  document.getElementById('results').addEventListener('click', handleResultsClick);
+  document.getElementById('results').addEventListener('input', handleResultsInput);
 
-  // Category grid delegation
-  document.getElementById('categoryGrid').addEventListener('click', handleCategoryClick);
-
-  // Category results delegation
+  // Category grid + results
+  document.getElementById('categoryGrid').addEventListener('click',    handleCategoryGridClick);
   document.getElementById('categoryResults').addEventListener('click', handleCategoryResultsClick);
   document.getElementById('categoryResults').addEventListener('input', handleCategoryResultsInput);
 
-  // Favorites delegation
+  // Favorites
   document.getElementById('favGrid').addEventListener('click', handleFavGridClick);
 
   // Stats reset
@@ -115,7 +110,7 @@ function wireEvents() {
 function openMobileNav()  { document.getElementById('mobileNav').classList.add('open');    document.body.style.overflow = 'hidden'; }
 function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow = ''; }
 
-/* ── PAGE NAV ── */
+/* ── PAGE NAVIGATION ── */
 function showPage(page) {
   state.currentPage = page;
   ['home','categories','stats','favorites'].forEach(p => {
@@ -123,11 +118,11 @@ function showPage(page) {
     if (el) el.classList.toggle('active', p === page);
   });
   requestAnimationFrame(() => {
-    if (page === 'favorites')  renderFavorites(state.favorites, t());
     if (page === 'categories') renderCategoryGrid(state.currentLang);
+    if (page === 'favorites')  renderFavorites(state.favorites, t());
     if (page === 'stats')      renderStatsPage(t(), state.favorites.length);
   });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
 /* ── TABS ── */
@@ -135,10 +130,8 @@ function switchTab(tab) {
   const isText = tab === 'text';
   document.getElementById('panel-text').hidden  = !isText;
   document.getElementById('panel-image').hidden = isText;
-  document.getElementById('tab-text').classList.toggle('active', isText);
+  document.getElementById('tab-text').classList.toggle('active',  isText);
   document.getElementById('tab-image').classList.toggle('active', !isText);
-  document.getElementById('tab-text').setAttribute('aria-selected',  String(isText));
-  document.getElementById('tab-image').setAttribute('aria-selected', String(!isText));
 }
 
 /* ── THEME ── */
@@ -183,7 +176,7 @@ function handleResultsInput(e) {
 }
 
 /* ── CATEGORY DELEGATION ── */
-function handleCategoryClick(e) {
+function handleCategoryGridClick(e) {
   const card = e.target.closest('[data-cat-id]');
   if (card) handleCategorySelect(card.dataset.catId);
 }
@@ -193,19 +186,19 @@ function handleCategoryResultsClick(e) {
   const card      = e.target.closest('.recipe-card');
   const filterBtn = e.target.closest('[data-filter]');
   if (favBtn)        { e.stopPropagation(); handleToggleFav(favBtn.dataset.fav); }
-  else if (viewBtn)  { e.stopPropagation(); handleOpenModalFromCategory(viewBtn.dataset.view); }
-  else if (card)     { handleOpenModalFromCategory(card.dataset.id); }
+  else if (viewBtn)  { e.stopPropagation(); handleOpenModalCat(viewBtn.dataset.view); }
+  else if (card)     { handleOpenModalCat(card.dataset.id); }
   else if (filterBtn){ state.categoryFilters.difficulty = filterBtn.dataset.filter; refreshCategoryResults(); }
 }
 function handleCategoryResultsInput(e) {
   if (e.target.id === 'searchBox') { state.categoryFilters.search = e.target.value; refreshCategoryResults(); }
 }
-function handleOpenModalFromCategory(id) {
-  const recipe = [...state.categoryRecipes, ...state.favorites].find(r => r.id === id);
-  if (recipe) { recordRecipeOpen(recipe.title); trackRecipeOpen(recipe.title, recipe.emoji).catch(()=>{}); openModal(recipe, t()); }
+function handleOpenModalCat(id) {
+  const r = [...state.categoryRecipes, ...state.favorites].find(x => x.id === id);
+  if (r) { recordRecipeOpen(r.title); trackRecipeOpen(r.title, r.emoji).catch(()=>{}); openModal(r, t()); }
 }
 
-/* ── FAV DELEGATION ── */
+/* ── FAVORITES DELEGATION ── */
 function handleFavGridClick(e) {
   const favBtn  = e.target.closest('[data-fav]');
   const viewBtn = e.target.closest('[data-view]');
@@ -233,7 +226,7 @@ async function handleFindRecipes() {
     trackSearch(data.recipes).catch(() => {});
     state.allRecipes          = data.recipes;
     state.detectedIngredients = data.detectedIngredients;
-    state.filters             = { difficulty: 'all', search: '' };
+    state.filters             = { difficulty:'all', search:'' };
     recordSearch(data.recipes);
     renderResults(data, state.favorites, state.filters, t());
   } catch (err) {
@@ -254,7 +247,7 @@ async function handleAnalyseImages() {
     trackSearch(data.recipes).catch(() => {});
     state.allRecipes          = data.recipes;
     state.detectedIngredients = data.detectedIngredients;
-    state.filters             = { difficulty: 'all', search: '' };
+    state.filters             = { difficulty:'all', search:'' };
     recordSearch(data.recipes);
     renderResults(data, state.favorites, state.filters, t());
   } catch (err) {
@@ -274,18 +267,21 @@ function addImageFile(file) {
   const v = validateImageFile(file);
   if (!v.valid) { showError('Invalid Image', `"${file.name}" ${t()[v.errorKey]}`); return; }
   const reader = new FileReader();
-  reader.onload = (ev) => { state.uploadedImages.push({ file, dataUrl: ev.target.result }); renderImagePreviews(); };
+  reader.onload = ev => { state.uploadedImages.push({ file, dataUrl: ev.target.result }); renderImagePreviews(); };
   reader.readAsDataURL(file);
 }
 function renderImagePreviews() {
   const grid = document.getElementById('previewGrid');
   grid.innerHTML = state.uploadedImages.map((img, i) => `
     <div class="preview-img-wrap">
-      <img src="${img.dataUrl}" alt="Ingredient photo ${i+1}"/>
-      <button class="remove-img" data-remove="${i}" aria-label="Remove image">×</button>
+      <img src="${img.dataUrl}" alt="photo ${i+1}"/>
+      <button class="remove-img" data-remove="${i}">×</button>
     </div>`).join('');
   grid.querySelectorAll('[data-remove]').forEach(btn => {
-    btn.addEventListener('click', () => { state.uploadedImages.splice(Number(btn.dataset.remove), 1); renderImagePreviews(); });
+    btn.addEventListener('click', () => {
+      state.uploadedImages.splice(Number(btn.dataset.remove), 1);
+      renderImagePreviews();
+    });
   });
   document.getElementById('analyzeBtn').style.display = state.uploadedImages.length ? 'flex' : 'none';
 }
@@ -295,50 +291,55 @@ async function handleCategorySelect(catId) {
   const cat = CATEGORIES.find(c => c.id === catId);
   if (!cat) return;
   state.activeCategoryId = catId;
-  state.categoryFilters  = { difficulty: 'all', search: '' };
+  state.categoryFilters  = { difficulty:'all', search:'' };
   document.querySelectorAll('.category-card').forEach(c => {
     c.classList.toggle('active', c.dataset.catId === catId);
   });
-  const catName = state.currentLang === 'ar' ? cat.nameAr : cat.name;
+  const catName    = state.currentLang === 'ar' ? cat.nameAr : cat.name;
+  const cuisineName = catName;
   showCategoryLoading(catName, t());
   try {
-    const lang        = state.currentLang === 'ar' ? 'Arabic' : 'English';
-    const cuisineName = state.currentLang === 'ar' ? cat.nameAr : cat.name;
-    const data        = await fetchRecipes(cat.ingredient.split(', '), lang, t(), cuisineName);
+    const lang = state.currentLang === 'ar' ? 'Arabic' : 'English';
+    const data = await fetchRecipes(cat.ingredient.split(', '), lang, t(), cuisineName);
     state.categoryRecipes = data.recipes;
     recordSearch(data.recipes);
     renderResults(data, state.favorites, state.categoryFilters, t(), 'categoryResults');
   } catch (err) {
     document.getElementById('categoryResults').innerHTML = `
-      <div class="loading-state" role="alert">
+      <div class="loading-state">
         <div style="font-size:44px;margin-bottom:14px">⚠️</div>
         <h3 style="color:var(--coral)">${t().wrongTitle}</h3>
-        <p>${t().errorRecipes + err.message}</p>
+        <p>${err.message}</p>
       </div>`;
   }
 }
 function refreshCategoryResults() {
   if (!state.categoryRecipes.length) return;
-  renderResults({ detectedIngredients: [], recipes: state.categoryRecipes }, state.favorites, state.categoryFilters, t(), 'categoryResults');
+  renderResults({ detectedIngredients:[], recipes:state.categoryRecipes }, state.favorites, state.categoryFilters, t(), 'categoryResults');
 }
 
 /* ── FAVORITES ── */
 function handleToggleFav(id) {
-  const recipe = [...state.allRecipes, ...state.categoryRecipes, ...state.favorites].find(r => r.id === id);
+  const all    = [...state.allRecipes, ...state.categoryRecipes, ...state.favorites];
+  const recipe = all.find(r => r.id === id);
   if (!recipe) return;
   state.favorites = toggleFavorite(state.favorites, recipe);
   saveFavorites(state.favorites);
   recordFavoriteCount(state.favorites.length);
   refreshResults();
   refreshCategoryResults();
-  renderFavorites(state.favorites, t());
+  if (state.currentPage === 'favorites') renderFavorites(state.favorites, t());
 }
 function handleOpenModal(id, fromFav = false) {
   const pool   = fromFav ? state.favorites : [...state.allRecipes, ...state.favorites];
   const recipe = pool.find(r => r.id === id);
-  if (recipe) { recordRecipeOpen(recipe.title); trackRecipeOpen(recipe.title, recipe.emoji).catch(()=>{}); openModal(recipe, t()); }
+  if (recipe) {
+    recordRecipeOpen(recipe.title);
+    trackRecipeOpen(recipe.title, recipe.emoji).catch(() => {});
+    openModal(recipe, t());
+  }
 }
 function refreshResults() {
   if (!state.allRecipes.length) return;
-  renderResults({ detectedIngredients: state.detectedIngredients, recipes: state.allRecipes }, state.favorites, state.filters, t());
+  renderResults({ detectedIngredients:state.detectedIngredients, recipes:state.allRecipes }, state.favorites, state.filters, t());
 }

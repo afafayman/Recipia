@@ -1,11 +1,49 @@
 /* ═══════════════════════════════════════════════════════════
    RECIPIA — UI Module
-   All DOM rendering functions.
 ═══════════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════════════════════
-   SKELETON LOADER
-══════════════════════════════════════════════════════════ */
+/* ── APPLY TRANSLATIONS ── */
+function applyTranslations(tx) {
+  const s = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const h = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML   = val; };
+
+  s('logoTagline',    tx.tagline);
+  s('eyebrow',        tx.eyebrow);
+  h('heroTitle',      tx.heroTitle);
+  s('heroSubtitle',   tx.heroSub);
+  s('tabTextLabel',   tx.tabText);
+  s('tabImgLabel',    tx.tabImg);
+  s('findBtnLabel',   tx.findBtn);
+  s('inputHint',      tx.inputHint);
+  s('uploadTitle',    tx.uploadTitle);
+  s('uploadSub',      tx.uploadSub);
+  s('analyzeBtnLabel',tx.analyzeBtn);
+  s('langBtn',        tx.langBtn);
+  s('mobileLangBtn',  tx.langBtn);
+  s('footerText',     tx.footerText);
+  s('nav-home',       tx.navExplore);
+  s('nav-categories', tx.navCategories);
+  s('nav-stats',      tx.navStats);
+  s('nav-fav',        tx.navFavorites);
+  s('mnav-home',      tx.navExplore);
+  s('mnav-categories',tx.navCategories);
+  s('mnav-stats',     tx.navStats);
+  s('mnav-fav',       tx.navFavorites);
+  s('catTitleMain',   tx.catTitleMain);
+  s('catTitleSub',    tx.catTitleSub);
+  s('catSubtitle',    tx.catSubtitle);
+  s('statsTitleMain', tx.statsTitleMain);
+  s('statsTitleSub',  tx.statsTitleSub);
+  s('statsSubtitle',  tx.statsSubtitle);
+  s('favTitleMain',   tx.favTitleMain);
+  s('favTitleSub',    tx.favTitleSub);
+  s('favSubtitle',    tx.favSub);
+
+  const inp = document.getElementById('ingredientInput');
+  if (inp) inp.placeholder = tx.inputPlaceholder;
+}
+
+/* ── SKELETON LOADER ── */
 function showSkeletons(count = 6) {
   const el    = document.getElementById('results');
   const cards = Array.from({ length: count }, () => `
@@ -31,12 +69,12 @@ function showSkeletons(count = 6) {
 
   el.innerHTML = `
     <div class="loading-state" style="padding-bottom:0">
-      <div class="chef-spinner" aria-label="Loading">👨‍🍳</div>
+      <div class="chef-spinner">👨‍🍳</div>
       <h3 id="loadingMsg">Working the kitchen…</h3>
       <div class="loading-dots"><span></span><span></span><span></span></div>
     </div>
-    <div class="skeleton-grid" role="status" aria-label="Loading recipes">${cards}</div>`;
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    <div class="skeleton-grid">${cards}</div>`;
+  el.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 function updateLoadingMsg(msg) {
@@ -44,123 +82,116 @@ function updateLoadingMsg(msg) {
   if (el) el.textContent = msg;
 }
 
-/* ══════════════════════════════════════════════════════════
-   ERROR STATE
-══════════════════════════════════════════════════════════ */
+/* ── ERROR STATE ── */
 function showError(title, msg) {
-  document.getElementById('results').innerHTML = `
-    <div class="loading-state" role="alert">
-      <div style="font-size:44px;margin-bottom:14px" aria-hidden="true">⚠️</div>
+  const el = document.getElementById('results');
+  if (el) el.innerHTML = `
+    <div class="loading-state">
+      <div style="font-size:44px;margin-bottom:14px">⚠️</div>
       <h3 style="color:var(--coral)">${title}</h3>
       <p>${msg}</p>
     </div>`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   RESULTS
-══════════════════════════════════════════════════════════ */
+/* ── FILTER HELPER ── */
+function applyFilters(recipes, filters) {
+  const search = (filters.search || '').toLowerCase();
+  return recipes.filter(r => {
+    const ms = !search
+      || r.title.toLowerCase().includes(search)
+      || (r.cuisine||'').toLowerCase().includes(search)
+      || (r.origin||'').toLowerCase().includes(search);
+    const md = filters.difficulty === 'all'
+      || (r.difficulty||'').toLowerCase().startsWith(filters.difficulty.toLowerCase().slice(0,3));
+    return ms && md;
+  });
+}
+
+/* ── RENDER RESULTS ── */
 function renderResults(data, favorites, filters, tx, targetId = 'results') {
-  const { detectedIngredients, recipes } = data;
+  const { detectedIngredients = [], recipes = [] } = data;
   const filtered   = applyFilters(recipes, filters);
   const smartCount = recipes.filter(r => r.isSmart).length;
+  const el         = document.getElementById(targetId);
+  if (!el) return;
 
-  document.getElementById(targetId).innerHTML = `
+  el.innerHTML = `
     <div class="results-top">
       <div>
         <div class="results-title">${tx.foundRecipes} <span>${filtered.length}</span> ${tx.forYou}</div>
         <div class="results-meta">${tx.basedOn} ${detectedIngredients.length} ${tx.ingredients} · ${smartCount} ${tx.smartSugg}</div>
       </div>
     </div>
-    <div class="filters-row" role="group" aria-label="Filter recipes">
-      <input class="search-box" id="searchBox" placeholder="${tx.searchPlaceholder}" value="${filters.search}" aria-label="${tx.searchPlaceholder}"/>
-      <button class="filter-btn ${filters.difficulty === 'all'    ? 'active' : ''}" data-filter="all">${tx.allFilter}</button>
-      <button class="filter-btn ${filters.difficulty === 'Easy'   ? 'active' : ''}" data-filter="Easy">${tx.easyFilter}</button>
-      <button class="filter-btn ${filters.difficulty === 'Medium' ? 'active' : ''}" data-filter="Medium">${tx.mediumFilter}</button>
-      <button class="filter-btn ${filters.difficulty === 'Hard'   ? 'active' : ''}" data-filter="Hard">${tx.hardFilter}</button>
+    <div class="filters-row">
+      <input class="search-box" id="searchBox" placeholder="${tx.searchPlaceholder}" value="${filters.search||''}"/>
+      <button class="filter-btn ${filters.difficulty==='all'   ?'active':''}" data-filter="all">${tx.allFilter}</button>
+      <button class="filter-btn ${filters.difficulty==='Easy'  ?'active':''}" data-filter="Easy">${tx.easyFilter}</button>
+      <button class="filter-btn ${filters.difficulty==='Medium'?'active':''}" data-filter="Medium">${tx.mediumFilter}</button>
+      <button class="filter-btn ${filters.difficulty==='Hard'  ?'active':''}" data-filter="Hard">${tx.hardFilter}</button>
     </div>
+    ${detectedIngredients.length ? `
     <div class="detected-ingredients">
       <div class="detected-label">${tx.yourIngredients}</div>
-      <div class="chip-row">${detectedIngredients.map(i => `<span class="chip">${i}</span>`).join('')}</div>
-    </div>
-    <div class="recipe-grid" id="recipeGrid">
-      ${filtered.map((r, i) => renderCard(r, i, favorites, tx)).join('')}
-    </div>`;
+      <div class="chip-row">${detectedIngredients.map(i=>`<span class="chip">${i}</span>`).join('')}</div>
+    </div>` : ''}
+    <div class="recipe-grid">${filtered.map((r,i)=>renderCard(r,i,favorites,tx)).join('')}</div>`;
 }
 
-function applyFilters(recipes, filters) {
-  const search = filters.search.toLowerCase();
-  return recipes.filter(r => {
-    const matchSearch = !search
-      || r.title.toLowerCase().includes(search)
-      || r.cuisine.toLowerCase().includes(search)
-      || r.origin.toLowerCase().includes(search);
-    const matchDiff = filters.difficulty === 'all'
-      || r.difficulty.toLowerCase().startsWith(filters.difficulty.toLowerCase().slice(0, 3));
-    return matchSearch && matchDiff;
-  });
-}
-
-/* ══════════════════════════════════════════════════════════
-   RECIPE CARD
-══════════════════════════════════════════════════════════ */
+/* ── RECIPE CARD ── */
 function renderCard(recipe, index, favorites, tx) {
   const fav = isFavorite(favorites, recipe.id);
   return `
-    <article class="recipe-card" style="animation-delay:${index * 50}ms"
-      data-id="${recipe.id}" aria-label="${recipe.title}" tabindex="0" role="button">
-      <button class="fav-btn ${fav ? 'active' : ''}" data-fav="${recipe.id}"
-        aria-label="${fav ? 'Remove from favorites' : 'Add to favorites'}">
-        ${fav ? '❤️' : '🤍'}
+    <article class="recipe-card" style="animation-delay:${index*50}ms"
+      data-id="${recipe.id}" tabindex="0" role="button">
+      <button class="fav-btn ${fav?'active':''}" data-fav="${recipe.id}">
+        ${fav?'❤️':'🤍'}
       </button>
       <div class="card-header">
-        <div class="card-origin">🌍 ${recipe.origin}</div>
+        <div class="card-origin">🌍 ${recipe.origin||''}</div>
         <div class="card-badges">
-          <span class="badge time">⏱ ${recipe.cookTime}</span>
-          <span class="badge diff">${recipe.difficulty}</span>
-          ${recipe.isSmart ? '<span class="badge smart">✨ Smart</span>' : ''}
+          <span class="badge time">⏱ ${recipe.cookTime||''}</span>
+          <span class="badge diff">${recipe.difficulty||''}</span>
+          ${recipe.isSmart?'<span class="badge smart">✨ Smart</span>':''}
         </div>
       </div>
-      <span class="card-emoji" aria-hidden="true">${recipe.emoji}</span>
+      <span class="card-emoji">${recipe.emoji||'🍽️'}</span>
       <div class="card-body">
-        <h2 class="card-title">${recipe.title}</h2>
-        <p class="card-desc">${recipe.description}</p>
-        ${recipe.isSmart && recipe.smartSuggestion
-          ? `<div class="smart-suggestion">${recipe.smartSuggestion}</div>` : ''}
-        ${recipe.nutrition ? `
+        <h2 class="card-title">${recipe.title||''}</h2>
+        <p class="card-desc">${recipe.description||''}</p>
+        ${recipe.isSmart&&recipe.smartSuggestion?`<div class="smart-suggestion">${recipe.smartSuggestion}</div>`:''}
+        ${recipe.nutrition?`
           <div class="nutrition-row">
             <span class="nut-badge">🔥 ${recipe.nutrition.calories} kcal</span>
             <span class="nut-badge">💪 ${recipe.nutrition.protein}</span>
             <span class="nut-badge">🌾 ${recipe.nutrition.carbs}</span>
-          </div>` : ''}
+          </div>`:''}
         <div class="card-ingredients">
-          ${(recipe.availableIngredients || []).slice(0, 4).map(i => `<span class="ing-chip">${i}</span>`).join('')}
-          ${(recipe.missingIngredients   || []).slice(0, 2).map(i => `<span class="ing-chip missing">${i}</span>`).join('')}
+          ${(recipe.availableIngredients||[]).slice(0,4).map(i=>`<span class="ing-chip">${i}</span>`).join('')}
+          ${(recipe.missingIngredients||[]).slice(0,2).map(i=>`<span class="ing-chip missing">${i}</span>`).join('')}
         </div>
         <div class="card-footer">
           <button class="view-recipe-btn" data-view="${recipe.id}">${tx.viewRecipe}</button>
-          <div class="match-score">${tx.match}: <strong>${recipe.matchScore}%</strong></div>
+          <div class="match-score">${tx.match}: <strong>${recipe.matchScore||0}%</strong></div>
         </div>
       </div>
     </article>`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   CATEGORIES PAGE
-══════════════════════════════════════════════════════════ */
+/* ── CATEGORIES ── */
 function renderCategoryGrid(lang) {
   const grid = document.getElementById('categoryGrid');
-  if (!grid) return;
-  if (!CATEGORIES || !CATEGORIES.length) return;
+  if (!grid || !CATEGORIES) return;
   grid.innerHTML = CATEGORIES.map(cat => `
-    <div class="category-card" data-cat-id="${cat.id}" role="button" tabindex="0"
-      aria-label="${lang === 'ar' ? cat.nameAr : cat.name}">
+    <div class="category-card" data-cat-id="${cat.id}" role="button" tabindex="0">
       <span class="cat-emoji">${cat.emoji}</span>
       <span class="cat-name">${lang === 'ar' ? cat.nameAr : cat.name}</span>
     </div>`).join('');
 }
 
 function showCategoryLoading(catName, tx) {
-  document.getElementById('categoryResults').innerHTML = `
+  const el = document.getElementById('categoryResults');
+  if (!el) return;
+  el.innerHTML = `
     <div class="loading-state">
       <div class="chef-spinner">👨‍🍳</div>
       <h3>${tx.catLoading} ${catName}…</h3>
@@ -168,22 +199,19 @@ function showCategoryLoading(catName, tx) {
     </div>`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   STATS PAGE
-══════════════════════════════════════════════════════════ */
+/* ── STATS ── */
 async function renderStatsPage(tx, favCount) {
   const grid = document.getElementById('statsGrid');
+  if (!grid) return;
 
-  // Show loading state first
   grid.innerHTML = `
     <div class="loading-state" style="padding:40px">
       <div class="chef-spinner">👨‍🍳</div>
       <h3 style="color:var(--coral)">Loading stats…</h3>
     </div>`;
 
-  // Fetch global stats from Supabase
-  const global  = await fetchGlobalStats();
-  const local   = loadStats();
+  const global      = await fetchGlobalStats();
+  const local       = loadStats();
   recordFavoriteCount(favCount);
 
   const topCuisines = getTopNGlobal(global.cuisineCounts, 5);
@@ -193,12 +221,7 @@ async function renderStatsPage(tx, favCount) {
   const noData      = global.totalSearches === 0;
 
   grid.innerHTML = `
-    <!-- Global banner -->
-    <div class="stats-global-banner">
-      🌍 ${tx.statsGlobal || 'Global stats — from all users worldwide'}
-    </div>
-
-    <!-- Summary cards -->
+    <div class="stats-global-banner">${tx.statsGlobal}</div>
     <div class="stats-summary">
       <div class="stat-card">
         <div class="stat-icon">🔍</div>
@@ -207,19 +230,17 @@ async function renderStatsPage(tx, favCount) {
       </div>
       <div class="stat-card">
         <div class="stat-icon">❤️</div>
-        <div class="stat-value">${local.favoriteCount}</div>
+        <div class="stat-value">${local.favoriteCount||0}</div>
         <div class="stat-label">${tx.statFavorites}</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🌍</div>
-        <div class="stat-value">${topCuisine ? topCuisine.name : '—'}</div>
+        <div class="stat-value">${topCuisine?topCuisine.name:'—'}</div>
         <div class="stat-label">${tx.statTopCuisine}</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🏆</div>
-        <div class="stat-value stat-value-sm">
-          ${topRecipe ? (global.recipeEmojis?.[topRecipe.name] || '') + ' ' + topRecipe.name : '—'}
-        </div>
+        <div class="stat-value stat-value-sm">${topRecipe?(global.recipeEmojis?.[topRecipe.name]||'')+' '+topRecipe.name:'—'}</div>
         <div class="stat-label">${tx.statTopRecipe}</div>
       </div>
     </div>
@@ -229,35 +250,29 @@ async function renderStatsPage(tx, favCount) {
         <div class="empty-icon">📊</div>
         <h3>${tx.statNoData}</h3>
       </div>` : `
-
-    <!-- Top Cuisines -->
     <div class="stats-section">
       <div class="stats-section-title">${tx.statTopIngredients}</div>
       <div class="stats-bar-list">
-        ${topCuisines.map((c, i) => {
-          const pct = Math.round((c.count / (topCuisines[0]?.count || 1)) * 100);
+        ${topCuisines.map((c,i)=>{
+          const pct = Math.round((c.count/(topCuisines[0]?.count||1))*100);
           return `
             <div class="stats-bar-row">
               <div class="stats-bar-label">${c.name}</div>
               <div class="stats-bar-track">
-                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i * 100}ms"></div>
+                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i*100}ms"></div>
               </div>
               <div class="stats-bar-count">${c.count}x</div>
             </div>`;
         }).join('')}
       </div>
     </div>
-
-    <!-- Top Recipes -->
     <div class="stats-section">
       <div class="stats-section-title">${tx.statRecentRecipes}</div>
       <div class="stats-recipe-list">
-        ${topRecipes.map((r, i) => `
+        ${topRecipes.map((r,i)=>`
           <div class="stats-recipe-row">
-            <div class="stats-recipe-rank">${i + 1}</div>
-            <div class="stats-recipe-name">
-              ${global.recipeEmojis?.[r.name] || ''} ${r.name}
-            </div>
+            <div class="stats-recipe-rank">${i+1}</div>
+            <div class="stats-recipe-name">${global.recipeEmojis?.[r.name]||''} ${r.name}</div>
             <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
           </div>`).join('')}
       </div>
@@ -268,71 +283,86 @@ async function renderStatsPage(tx, favCount) {
     </div>`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   MODAL
-══════════════════════════════════════════════════════════ */
+/* ── FAVORITES ── */
+function renderFavorites(favorites, tx) {
+  const grid = document.getElementById('favGrid');
+  if (!grid) return;
+  if (!favorites.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🤍</div>
+        <h3>${tx.emptyFav}</h3>
+        <p>${tx.emptyFavSub}</p>
+      </div>`;
+    return;
+  }
+  grid.innerHTML = `<div class="recipe-grid">${favorites.map((r,i)=>renderCard(r,i,favorites,tx)).join('')}</div>`;
+}
+
+/* ── MODAL ── */
 function openModal(recipe, tx) {
-  document.getElementById('modalInner').innerHTML = `
+  const inner = document.getElementById('modalInner');
+  if (!inner) return;
+  inner.innerHTML = `
     <div class="modal-header">
       <div>
         <div class="modal-origin-line">
-          <span class="modal-origin-badge">🌍 ${recipe.origin}</span>
-          <span style="font-size:12px;color:var(--color-text-dim)">${recipe.cuisine}</span>
+          <span class="modal-origin-badge">🌍 ${recipe.origin||''}</span>
+          <span style="font-size:12px;color:var(--text-dim)">${recipe.cuisine||''}</span>
         </div>
-        <h2 class="modal-title" id="modalTitle">${recipe.emoji} ${recipe.title}</h2>
+        <h2 class="modal-title">${recipe.emoji||''} ${recipe.title||''}</h2>
       </div>
-      <button class="modal-close" id="modalCloseBtn" aria-label="Close recipe">×</button>
+      <button class="modal-close" id="modalCloseBtn">×</button>
     </div>
     <div class="modal-body">
-      <p class="modal-desc">${recipe.description}</p>
-      ${recipe.isSmart && recipe.smartSuggestion
-        ? `<div class="smart-suggestion" style="margin-bottom:18px">${recipe.smartSuggestion}</div>` : ''}
+      <p class="modal-desc">${recipe.description||''}</p>
+      ${recipe.isSmart&&recipe.smartSuggestion?`<div class="smart-suggestion" style="margin-bottom:18px">${recipe.smartSuggestion}</div>`:''}
 
       <div class="modal-section-title">${tx.atAGlance}</div>
       <div class="modal-meta">
-        <div class="meta-item"><div class="meta-value">${recipe.prepTime}</div><div class="meta-label">${tx.prep}</div></div>
-        <div class="meta-item"><div class="meta-value">${recipe.cookTime}</div><div class="meta-label">${tx.cook}</div></div>
-        <div class="meta-item"><div class="meta-value">${recipe.servings}</div><div class="meta-label">${tx.servings}</div></div>
-        <div class="meta-item"><div class="meta-value">${recipe.difficulty}</div><div class="meta-label">${tx.difficulty}</div></div>
-        <div class="meta-item"><div class="meta-value" style="color:var(--mint-dim)">${recipe.matchScore}%</div><div class="meta-label">${tx.match}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.prepTime||'—'}</div><div class="meta-label">${tx.prep}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.cookTime||'—'}</div><div class="meta-label">${tx.cook}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.servings||'—'}</div><div class="meta-label">${tx.servings}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.difficulty||'—'}</div><div class="meta-label">${tx.difficulty}</div></div>
+        <div class="meta-item"><div class="meta-value" style="color:var(--mint-dim)">${recipe.matchScore||0}%</div><div class="meta-label">${tx.match}</div></div>
       </div>
 
-      ${recipe.nutrition ? `
+      ${recipe.nutrition?`
         <div class="modal-section-title">${tx.nutritionSection}</div>
         <div class="nutrition-grid">
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.calories}</div><div class="nut-label">${tx.calories}</div></div>
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.protein}</div><div class="nut-label">${tx.protein}</div></div>
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.carbs}</div><div class="nut-label">${tx.carbs}</div></div>
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.fat}</div><div class="nut-label">${tx.fat}</div></div>
-        </div>` : ''}
+        </div>`:''}
 
       <div class="modal-section-title">${tx.ingredientsSection}</div>
       <div class="ingredients-grid">
-        ${(recipe.allIngredients || []).map(i => `
+        ${(recipe.allIngredients||[]).map(i=>`
           <div class="ing-row">
-            <span class="ing-check">${i.have ? '✅' : '❌'}</span>
-            <span class="ing-name" style="${!i.have ? 'opacity:0.5;text-decoration:line-through' : ''}">${i.name}</span>
-            <span class="ing-amount">${i.amount}</span>
+            <span class="ing-check">${i.have?'✅':'❌'}</span>
+            <span class="ing-name" style="${!i.have?'opacity:.5;text-decoration:line-through':''}">${i.name}</span>
+            <span class="ing-amount">${i.amount||''}</span>
           </div>`).join('')}
       </div>
 
       <div class="modal-section-title">${tx.preparation}</div>
       <div class="steps-list">
-        ${(recipe.steps || []).map((s, i) => `
+        ${(recipe.steps||[]).map((s,i)=>`
           <div class="step-item">
-            <div class="step-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</div>
+            <div class="step-num">${String(i+1).padStart(2,'0')}</div>
             <div class="step-content">
-              <div class="step-title">${s.title}</div>
-              <p class="step-text">${s.instruction}</p>
+              <div class="step-title">${s.title||''}</div>
+              <p class="step-text">${s.instruction||''}</p>
             </div>
           </div>`).join('')}
       </div>
 
-      ${recipe.tips ? `
+      ${recipe.tips?`
         <div class="chef-tip">
           <div class="chef-tip-label">${tx.chefTip}</div>
           <p class="chef-tip-text">${recipe.tips}</p>
-        </div>` : ''}
+        </div>`:''}
     </div>`;
 
   document.getElementById('modal').style.display = 'flex';
@@ -343,93 +373,4 @@ function openModal(recipe, tx) {
 function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.body.style.overflow = '';
-}
-
-/* ══════════════════════════════════════════════════════════
-   FAVORITES PAGE
-══════════════════════════════════════════════════════════ */
-function renderFavorites(favorites, tx) {
-  const words   = tx.favPageTitle.split(' ');
-  document.getElementById('favTitle').innerHTML    = `${words[0]} <span>${words.slice(1).join(' ')}</span>`;
-  document.getElementById('favSubtitle').textContent = tx.favSub;
-
-  const grid = document.getElementById('favGrid');
-  if (!favorites.length) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon" aria-hidden="true">🤍</div>
-        <h3>${tx.emptyFav}</h3>
-        <p>${tx.emptyFavSub}</p>
-      </div>`;
-    return;
-  }
-  grid.innerHTML = `<div class="recipe-grid">${favorites.map((r, i) => renderCard(r, i, favorites, tx)).join('')}</div>`;
-}
-
-/* ══════════════════════════════════════════════════════════
-   TRANSLATIONS APPLY
-══════════════════════════════════════════════════════════ */
-function safeSet(id, value, isHTML = false) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (isHTML) el.innerHTML = value;
-  else el.textContent = value;
-}
-
-function splitTitle(text) {
-  if (!text) return ["", ""];
-  const parts = text.split(" ");
-  return [parts[0], parts.slice(1).join(" ")];
-}
-
-function applyTranslations(tx) {
-  safeSet('logoTagline', tx.tagline);
-
-  safeSet('eyebrow', tx.eyebrow);
-  safeSet('heroTitle', tx.heroTitle, true);
-  safeSet('heroSubtitle', tx.heroSub);
-
-  safeSet('tabTextLabel', tx.tabText);
-  safeSet('tabImgLabel', tx.tabImg);
-
-  safeSet('findBtnLabel', tx.findBtn);
-  safeSet('inputHint', tx.inputHint);
-  safeSet('uploadTitle', tx.uploadTitle);
-  safeSet('uploadSub', tx.uploadSub);
-  safeSet('analyzeBtnLabel', tx.analyzeBtn);
-  safeSet('langBtn', tx.langBtn);
-
-  const input = document.getElementById('ingredientInput');
-  if (input) input.placeholder = tx.inputPlaceholder;
-
-  safeSet('nav-home', tx.navExplore);
-  safeSet('nav-categories', tx.navCategories);
-  safeSet('nav-stats', tx.navStats);
-  safeSet('nav-fav', tx.navFavorites);
-
-  safeSet('mnav-home', tx.navExplore);
-  safeSet('mnav-categories', tx.navCategories);
-  safeSet('mnav-stats', tx.navStats);
-  safeSet('mnav-fav', tx.navFavorites);
-  safeSet('mobileLangBtn', tx.langBtn);
-
-  const themeBtn = document.getElementById('themeBtn');
-  const mobileThemeBtn = document.getElementById('mobileThemeBtn');
-  if (themeBtn && mobileThemeBtn) {
-    mobileThemeBtn.textContent = themeBtn.textContent;
-  }
-
-  // Categories
-  const [catMain, catSub] = splitTitle(tx.catTitle);
-  safeSet('catTitleMain', catMain);
-  safeSet('catTitleSub', catSub);
-  safeSet('catSubtitle', tx.catSubtitle);
-
-  // Stats
-  const [statsMain, statsSub] = splitTitle(tx.statsTitle);
-  safeSet('statsTitleMain', statsMain);
-  safeSet('statsTitleSub', statsSub);
-  safeSet('statsSubtitle', tx.statsSubtitle);
-
-  safeSet('footerText', tx.footerText);
 }
