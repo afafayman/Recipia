@@ -28,13 +28,11 @@
       <a class="nav-link" id="nav-fav">❤️ Favorites</a>
       <button class="theme-btn" id="themeBtn">🌙</button>
       <button class="lang-btn"  id="langBtn">🌐 العربية</button>
-      <!-- Auth button (desktop) -->
-      <button class="auth-btn" id="authBtn">Sign In</button>
       <button class="hamburger" id="hamburger">☰</button>
     </nav>
   </header>
 
-  <!-- MOBILE NAV -->
+  <!-- MOBILE NAV OVERLAY -->
   <div class="mobile-nav" id="mobileNav">
     <div class="mobile-nav-panel">
       <button class="mobile-nav-close" id="mobileNavClose">×</button>
@@ -42,60 +40,9 @@
       <button class="mobile-nav-link" id="mnav-cat-btn">🍽️ <span id="mnav-categories">Categories</span></button>
       <button class="mobile-nav-link" id="mnav-stats-btn">📊 <span id="mnav-stats">Stats</span></button>
       <button class="mobile-nav-link" id="mnav-fav-btn">❤️ <span id="mnav-fav">Favorites</span></button>
-      <button class="mobile-nav-link" id="mnav-auth-btn">👤 <span id="mnav-auth">Sign In</span></button>
       <div class="mobile-nav-footer">
         <button class="theme-btn" id="mobileThemeBtn">🌙</button>
         <button class="lang-btn"  id="mobileLangBtn">🌐 العربية</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- AUTH MODAL -->
-  <div class="modal-overlay" id="authModal" style="display:none">
-    <div class="modal auth-modal" id="authModalInner">
-      <div class="modal-header">
-        <h2 class="modal-title" id="authModalTitle">Welcome to Recipia 👨‍🍳</h2>
-        <button class="modal-close" id="authModalClose">×</button>
-      </div>
-      <div class="modal-body">
-        <!-- TABS -->
-        <div class="auth-tabs">
-          <button class="auth-tab active" id="tab-signin">Sign In</button>
-          <button class="auth-tab" id="tab-signup">Sign Up</button>
-        </div>
-
-        <!-- SIGN IN FORM -->
-        <div id="form-signin">
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-input" type="email" id="signin-email" placeholder="your@email.com"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input class="form-input" type="password" id="signin-password" placeholder="••••••••"/>
-          </div>
-          <div class="form-error" id="signin-error"></div>
-          <button class="btn-primary btn-full" id="signinBtn">Sign In</button>
-        </div>
-
-        <!-- SIGN UP FORM -->
-        <div id="form-signup" hidden>
-          <div class="form-group">
-            <label class="form-label">Username</label>
-            <input class="form-input" type="text" id="signup-username" placeholder="chef_ali"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-input" type="email" id="signup-email" placeholder="your@email.com"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input class="form-input" type="password" id="signup-password" placeholder="At least 6 characters"/>
-          </div>
-          <div class="form-error" id="signup-error"></div>
-          <button class="btn-primary btn-full" id="signupBtn">Create Account</button>
-        </div>
-
       </div>
     </div>
   </div>
@@ -107,15 +54,15 @@
       <span class="food-float" style="top:12%;left:5%;animation-duration:6s">🍋</span>
       <span class="food-float" style="top:20%;right:6%;animation-duration:7s;animation-delay:1s">🌿</span>
       <span class="food-float" style="top:60%;left:3%;animation-duration:8s;animation-delay:2s">🧄</span>
-      <span class="food-float" style="top:70%;right:4%;animation-duration:5.5s;animation-delay:.5s">🫙</span>
+      <span class="food-float" style="top:70%;right:4%;animation-duration:5.5s;animation-delay:.5s">🥑</span>
       <span class="food-float" style="top:35%;left:8%;animation-duration:7.5s;animation-delay:1.5s;font-size:22px">🍅</span>
-      <span class="food-float" style="top:45%;right:7%;animation-duration:6.5s;animation-delay:2.5s;font-size:20px">🫑</span>
+      <span class="food-float" style="top:45%;right:7%;animation-duration:6.5s;animation-delay:2.5s;font-size:20px">🍄</span>
       <span class="food-float" style="top:80%;left:12%;animation-duration:9s;animation-delay:3s;font-size:18px">🧅</span>
       <span class="food-float" style="top:75%;right:14%;animation-duration:7s;animation-delay:1s;font-size:16px;opacity:.3">🥦</span>
 
       <div class="hero-eyebrow" id="eyebrow">Smart Recipes, Real Ingredients</div>
       <h1 id="heroTitle">What's cooking in your<br/><em>kitchen</em> today?</h1>
-      <p id="heroSubtitle">Tell us what ingredients you have and we'll find you delicious recipes from cuisines all around the world.</p>
+      <p  id="heroSubtitle">Tell us what ingredients you have and we'll find you delicious recipes from cuisines all around the world.</p>
 
       <div class="input-panel">
         <div class="input-tabs">
@@ -123,35 +70,43 @@
           <button class="tab-btn"        id="tab-image">📸 <span id="tabImgLabel">Upload Photos</span></button>
         </div>
         <div class="input-body">
+
+          <!-- TEXT PANEL -->
           <div id="panel-text">
             <div class="text-input-row">
               <textarea class="ingredient-textarea" id="ingredientInput" rows="3"
-                placeholder="e.g. chicken, garlic, lemon, olive oil…"></textarea>
+                placeholder="e.g. chicken, garlic, lemon…"></textarea>
               <button class="btn-primary" id="findBtn">🔍 <span id="findBtnLabel">Find Recipes</span></button>
             </div>
             <p class="input-hint" id="inputHint">Separate ingredients with commas.</p>
           </div>
+
+          <!-- IMAGE PANEL -->
           <div id="panel-image" hidden>
             <div class="upload-zone" id="dropZone" tabindex="0">
               <input type="file" id="imgInput" accept="image/*" multiple/>
               <span class="upload-zone-icon">🖼️</span>
               <h3 id="uploadTitle">Drop your photos here</h3>
-              <p id="uploadSub">or click to browse files</p>
+              <p  id="uploadSub">or click to browse files</p>
             </div>
             <div class="image-preview-grid" id="previewGrid"></div>
             <button class="btn-primary btn-full" id="analyzeBtn" style="display:none">
               🤖 <span id="analyzeBtnLabel">Analyse & Find Recipes</span>
             </button>
           </div>
+
         </div>
       </div>
     </section>
+
     <section id="results"></section>
   </main>
 
   <!-- CATEGORIES PAGE -->
   <div id="page-categories" class="page">
-    <h1 class="page-title"><span id="catTitleMain">Browse</span> <span class="coral" id="catTitleSub">Categories</span></h1>
+    <h1 class="page-title">
+      <span id="catTitleMain">Browse</span> <span class="coral" id="catTitleSub">Categories</span>
+    </h1>
     <p class="page-subtitle" id="catSubtitle">Pick a cuisine and discover recipes instantly</p>
     <div class="category-grid" id="categoryGrid"></div>
     <div id="categoryResults"></div>
@@ -159,13 +114,10 @@
 
   <!-- STATS PAGE -->
   <div id="page-stats" class="page">
-    <h1 class="page-title"><span id="statsTitleMain">Your</span> <span class="coral" id="statsTitleSub">Stats</span></h1>
+    <h1 class="page-title">
+      <span id="statsTitleMain">Your</span> <span class="coral" id="statsTitleSub">Stats</span>
+    </h1>
     <p class="page-subtitle" id="statsSubtitle">Your personal Recipia activity</p>
-    <!-- Stats tabs -->
-    <div class="stats-tabs" id="statsTabs">
-      <button class="stats-tab active" id="stats-tab-global" data-tab="global">🌍 Global</button>
-      <button class="stats-tab"        id="stats-tab-personal" data-tab="personal">👤 My Stats</button>
-    </div>
     <div id="statsGrid"></div>
   </div>
 
@@ -176,7 +128,7 @@
     <div id="favGrid"></div>
   </div>
 
-  <!-- RECIPE MODAL -->
+  <!-- MODAL -->
   <div class="modal-overlay" id="modal" style="display:none">
     <div class="modal" id="modalInner"></div>
   </div>
@@ -189,7 +141,6 @@
 
   <script src="js/translations.js"></script>
   <script src="js/database.js"></script>
-  <script src="js/auth.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/api.js"></script>
   <script src="js/favorites.js"></script>

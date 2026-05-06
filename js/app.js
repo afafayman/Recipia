@@ -32,7 +32,6 @@ function restorePreferences() {
   document.body.classList.toggle('ar', lang === 'ar');
   document.documentElement.lang = lang;
   applyTranslations(t());
-  updateAuthUI();
 }
 
 /* ── WIRE ALL EVENTS ── */
@@ -101,115 +100,10 @@ function wireEvents() {
   // Favorites
   document.getElementById('favGrid').addEventListener('click', handleFavGridClick);
 
-  // Auth
-  document.getElementById('authBtn').addEventListener('click',    handleAuthBtnClick);
-  document.getElementById('mnav-auth-btn').addEventListener('click', () => { handleAuthBtnClick(); closeMobileNav(); });
-  document.getElementById('authModalClose').addEventListener('click', closeAuthModal);
-  document.getElementById('authModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('authModal')) closeAuthModal();
+  // Stats reset
+  document.getElementById('statsGrid').addEventListener('click', (e) => {
+    if (e.target.id === 'resetStatsBtn') { clearStats(); renderStatsPage(t(), state.favorites.length); }
   });
-  document.getElementById('tab-signin').addEventListener('click', () => switchAuthTab('signin'));
-  document.getElementById('tab-signup').addEventListener('click', () => switchAuthTab('signup'));
-  document.getElementById('signinBtn').addEventListener('click',  handleSignIn);
-  document.getElementById('signupBtn').addEventListener('click',  handleSignUp);
-
-  // Stats tabs
-  document.getElementById('statsTabs').addEventListener('click', (e) => {
-    const tab = e.target.closest('[data-tab]');
-    if (tab) renderStatsPage(t(), state.favorites.length, tab.dataset.tab);
-  });
-
-  // Stats reset — removed
-}
-
-/* ── AUTH UI ── */
-function updateAuthUI() {
-  const user     = getUser();
-  const name     = user ? getUsername() : null;
-  const btnText  = user ? `👤 ${name}` : 'Sign In';
-  const mnavText = user ? `👤 ${name}` : 'Sign In';
-
-  document.getElementById('authBtn').textContent       = btnText;
-  document.getElementById('authBtn').classList.toggle('signed-in', !!user);
-  document.getElementById('mnav-auth').textContent     = mnavText;
-}
-
-function handleAuthBtnClick() {
-  if (getUser()) {
-    // Show sign out option
-    if (confirm(`Sign out of ${getUsername()}?`)) {
-      signOut().then(() => { updateAuthUI(); refreshResults(); });
-    }
-  } else {
-    openAuthModal();
-  }
-}
-
-function openAuthModal() {
-  document.getElementById('authModal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  switchAuthTab('signin');
-}
-
-function closeAuthModal() {
-  document.getElementById('authModal').style.display = 'none';
-  document.body.style.overflow = '';
-  document.getElementById('signin-error').textContent = '';
-  document.getElementById('signup-error').textContent = '';
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('form-signin').hidden = tab !== 'signin';
-  document.getElementById('form-signup').hidden = tab !== 'signup';
-  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
-  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
-}
-
-async function handleSignIn() {
-  const email    = document.getElementById('signin-email').value.trim();
-  const password = document.getElementById('signin-password').value;
-  const errEl    = document.getElementById('signin-error');
-  errEl.textContent = '';
-
-  if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
-
-  const btn = document.getElementById('signinBtn');
-  btn.textContent = 'Signing in…'; btn.disabled = true;
-
-  try {
-    await signIn(email, password);
-    updateAuthUI();
-    closeAuthModal();
-    if (state.currentPage === 'stats') renderStatsPage(t(), state.favorites.length);
-  } catch (err) {
-    errEl.textContent = err.message;
-  } finally {
-    btn.textContent = 'Sign In'; btn.disabled = false;
-  }
-}
-
-async function handleSignUp() {
-  const username = document.getElementById('signup-username').value.trim();
-  const email    = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
-  const errEl    = document.getElementById('signup-error');
-  errEl.textContent = '';
-
-  if (!username || !email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
-  if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
-
-  const btn = document.getElementById('signupBtn');
-  btn.textContent = 'Creating account…'; btn.disabled = true;
-
-  try {
-    await signUp(email, password, username);
-    updateAuthUI();
-    closeAuthModal();
-  } catch (err) {
-    errEl.textContent = err.message;
-  } finally {
-    btn.textContent = 'Create Account'; btn.disabled = false;
-  }
 }
 
 /* ── MOBILE NAV ── */
