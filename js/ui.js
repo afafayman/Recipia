@@ -39,8 +39,8 @@ function applyTranslations(tx) {
   s('favTitleSub',    tx.favTitleSub);
   s('favSubtitle',    tx.favSub);
 
-  const inp = document.getElementById('ingredientInput');
-  if (inp) inp.placeholder = tx.inputPlaceholder;
+  const authBtn = document.getElementById('authBtn');
+  if (authBtn && !authBtn.classList.contains('signed-in')) authBtn.textContent = 'Sign In';
 }
 
 /* ── SKELETON LOADER ── */
@@ -199,10 +199,15 @@ function showCategoryLoading(catName, tx) {
     </div>`;
 }
 
-/* ── STATS ── */
-async function renderStatsPage(tx, favCount) {
+/* ── STATS PAGE ── */
+async function renderStatsPage(tx, favCount, activeTab = 'global') {
   const grid = document.getElementById('statsGrid');
   if (!grid) return;
+
+  // Update tab UI
+  document.querySelectorAll('.stats-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === activeTab);
+  });
 
   grid.innerHTML = `
     <div class="loading-state" style="padding:40px">
@@ -210,10 +215,15 @@ async function renderStatsPage(tx, favCount) {
       <h3 style="color:var(--coral)">Loading stats…</h3>
     </div>`;
 
-  const global      = await fetchGlobalStats();
-  const local       = loadStats();
-  recordFavoriteCount(favCount);
+  if (activeTab === 'global') {
+    await renderGlobalStats(grid, tx);
+  } else {
+    await renderPersonalStats(grid, tx, favCount);
+  }
+}
 
+async function renderGlobalStats(grid, tx) {
+  const global      = await fetchGlobalStats();
   const topCuisines = getTopNGlobal(global.cuisineCounts, 5);
   const topRecipes  = getTopNGlobal(global.recipeCounts,  5);
   const topCuisine  = topCuisines[0];
@@ -229,32 +239,24 @@ async function renderStatsPage(tx, favCount) {
         <div class="stat-label">${tx.statSearches}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">❤️</div>
-        <div class="stat-value">${local.favoriteCount||0}</div>
-        <div class="stat-label">${tx.statFavorites}</div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon">🌍</div>
-        <div class="stat-value">${topCuisine?topCuisine.name:'—'}</div>
+        <div class="stat-value stat-value-sm">${topCuisine ? topCuisine.name : '—'}</div>
         <div class="stat-label">${tx.statTopCuisine}</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="grid-column:span 2">
         <div class="stat-icon">🏆</div>
-        <div class="stat-value stat-value-sm">${topRecipe?(global.recipeEmojis?.[topRecipe.name]||'')+' '+topRecipe.name:'—'}</div>
+        <div class="stat-value stat-value-sm">${topRecipe ? (global.recipeEmojis?.[topRecipe.name]||'') + ' ' + topRecipe.name : '—'}</div>
         <div class="stat-label">${tx.statTopRecipe}</div>
       </div>
     </div>
 
     ${noData ? `
-      <div class="empty-state">
-        <div class="empty-icon">📊</div>
-        <h3>${tx.statNoData}</h3>
-      </div>` : `
+      <div class="empty-state"><div class="empty-icon">📊</div><h3>${tx.statNoData}</h3></div>` : `
     <div class="stats-section">
       <div class="stats-section-title">${tx.statTopIngredients}</div>
       <div class="stats-bar-list">
-        ${topCuisines.map((c,i)=>{
-          const pct = Math.round((c.count/(topCuisines[0]?.count||1))*100);
+        ${topCuisines.map((c,i) => {
+          const pct = Math.round((c.count / (topCuisines[0]?.count||1)) * 100);
           return `
             <div class="stats-bar-row">
               <div class="stats-bar-label">${c.name}</div>
@@ -269,18 +271,91 @@ async function renderStatsPage(tx, favCount) {
     <div class="stats-section">
       <div class="stats-section-title">${tx.statRecentRecipes}</div>
       <div class="stats-recipe-list">
-        ${topRecipes.map((r,i)=>`
+        ${topRecipes.map((r,i) => `
           <div class="stats-recipe-row">
             <div class="stats-recipe-rank">${i+1}</div>
             <div class="stats-recipe-name">${global.recipeEmojis?.[r.name]||''} ${r.name}</div>
             <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
           </div>`).join('')}
       </div>
-    </div>`}
+    </div>`}`;
+}
 
-    <div style="text-align:center;margin-top:24px">
-      <button class="btn-reset-stats" id="resetStatsBtn">${tx.statReset}</button>
-    </div>`;
+async function renderPersonalStats(grid, tx, favCount) {
+  const user = getUser();
+
+  if (!user) {
+    grid.innerHTML = `
+      <div class="stats-login-prompt">
+        <div class="prompt-icon">👤</div>
+        <h3>Sign in to see your stats</h3>
+        <p>Track your searches, favorite cuisines, and most opened recipes.</p>
+        <button class="btn-primary" id="statsSignInBtn" style="margin:0 auto">Sign In</button>
+      </div>`;
+    document.getElementById('statsSignInBtn')?.addEventListener('click', () => openAuthModal());
+    return;
+  }
+
+  const personal    = await fetchPersonalStats(getUserId());
+  const topCuisines = getTopNGlobal(personal.cuisineCounts, 5);
+  const topRecipes  = getTopNGlobal(personal.recipeCounts,  5);
+  const noData      = personal.totalSearches === 0;
+
+  grid.innerHTML = `
+    <div class="stats-global-banner">👤 ${tx.statsPersonal || 'Your personal activity'} · ${getUsername()}</div>
+    <div class="stats-summary">
+      <div class="stat-card">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-value">${personal.totalSearches}</div>
+        <div class="stat-label">${tx.statSearches}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-value">${favCount}</div>
+        <div class="stat-label">${tx.statFavorites}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🌍</div>
+        <div class="stat-value stat-value-sm">${topCuisines[0] ? topCuisines[0].name : '—'}</div>
+        <div class="stat-label">${tx.statTopCuisine}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-value stat-value-sm">${topRecipes[0] ? topRecipes[0].name : '—'}</div>
+        <div class="stat-label">${tx.statTopRecipe}</div>
+      </div>
+    </div>
+
+    ${noData ? `
+      <div class="empty-state"><div class="empty-icon">📊</div><h3>${tx.statNoData}</h3></div>` : `
+    <div class="stats-section">
+      <div class="stats-section-title">${tx.statTopIngredients}</div>
+      <div class="stats-bar-list">
+        ${topCuisines.map((c,i) => {
+          const pct = Math.round((c.count / (topCuisines[0]?.count||1)) * 100);
+          return `
+            <div class="stats-bar-row">
+              <div class="stats-bar-label">${c.name}</div>
+              <div class="stats-bar-track">
+                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i*100}ms"></div>
+              </div>
+              <div class="stats-bar-count">${c.count}x</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">${tx.statRecentRecipes}</div>
+      <div class="stats-recipe-list">
+        ${topRecipes.map((r,i) => `
+          <div class="stats-recipe-row">
+            <div class="stats-recipe-rank">${i+1}</div>
+            <div class="stats-recipe-name">${r.name}</div>
+            <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
+          </div>`).join('')}
+      </div>
+    </div>`}`;
+}
 }
 
 /* ── FAVORITES ── */

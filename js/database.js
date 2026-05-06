@@ -113,11 +113,12 @@ async function cacheRecipes(ingredients, recipesData) {
 
 async function trackSearch(recipes) {
   try {
+    const userId  = getUserId(); // null if not logged in
     const cuisines = [...new Set(recipes.map(r => r.cuisine || r.origin || 'Other'))];
     for (const cuisine of cuisines) {
       await supabaseRequest('searches', {
         method: 'POST',
-        body:   { cuisine },
+        body:   { cuisine, user_id: userId },
       });
     }
   } catch (e) {
@@ -127,9 +128,10 @@ async function trackSearch(recipes) {
 
 async function trackRecipeOpen(recipeTitle, recipeEmoji = '') {
   try {
+    const userId = getUserId();
     await supabaseRequest('recipe_opens', {
       method: 'POST',
-      body:   { recipe_title: recipeTitle, recipe_emoji: recipeEmoji },
+      body:   { recipe_title: recipeTitle, recipe_emoji: recipeEmoji, user_id: userId },
     });
   } catch (e) {
     console.warn('trackRecipeOpen failed silently:', e.message);
@@ -173,7 +175,39 @@ async function fetchGlobalStats() {
   }
 }
 
-function getTopNGlobal(obj, n = 5) {
+async function fetchPersonalStats(userId) {
+  if (!userId) return { totalSearches: 0, cuisineCounts: {}, recipeCounts: {} };
+  try {
+    const [searches, opens] = await Promise.all([
+      supabaseRequest('searches',     { params: `?user_id=eq.${userId}&select=cuisine` }),
+      supabaseRequest('recipe_opens', { params: `?user_id=eq.${userId}&select=recipe_title,recipe_emoji` }),
+    ]);
+
+    const cuisineCounts = {};
+    (searches || []).forEach(({ cuisine }) => {
+      if (cuisine) cuisineCounts[cuisine] = (cuisineCounts[cuisine] || 0) + 1;
+    });
+
+    const recipeCounts = {};
+    const recipeEmojis = {};
+    (opens || []).forEach(({ recipe_title, recipe_emoji }) => {
+      if (recipe_title) {
+        recipeCounts[recipe_title] = (recipeCounts[recipe_title] || 0) + 1;
+        if (recipe_emoji) recipeEmojis[recipe_title] = recipe_emoji;
+      }
+    });
+
+    return {
+      totalSearches: (searches || []).length,
+      cuisineCounts,
+      recipeCounts,
+      recipeEmojis,
+    };
+  } catch (e) {
+    console.warn('fetchPersonalStats failed:', e.message);
+    return { totalSearches: 0, cuisineCounts: {}, recipeCounts: {} };
+  }
+}
   return Object.entries(obj)
     .sort((a, b) => b[1] - a[1])
     .slice(0, n)
