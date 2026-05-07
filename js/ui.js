@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    RECIPIA — UI Module
+   All DOM rendering functions
 ═══════════════════════════════════════════════════════════ */
 
 /* ── APPLY TRANSLATIONS ── */
@@ -41,11 +42,18 @@ function applyTranslations(tx) {
 
   const inp = document.getElementById('ingredientInput');
   if (inp) inp.placeholder = tx.inputPlaceholder;
+
+  // Don't override auth button if user is signed in
+  const authBtn = document.getElementById('authBtn');
+  if (authBtn && !authBtn.classList.contains('signed-in')) {
+    authBtn.textContent = tx.signIn || 'Sign In';
+  }
 }
 
 /* ── SKELETON LOADER ── */
 function showSkeletons(count = 6) {
   const el    = document.getElementById('results');
+  if (!el) return;
   const cards = Array.from({ length: count }, () => `
     <div class="skeleton-card" aria-hidden="true">
       <div class="sk-header">
@@ -74,7 +82,7 @@ function showSkeletons(count = 6) {
       <div class="loading-dots"><span></span><span></span><span></span></div>
     </div>
     <div class="skeleton-grid">${cards}</div>`;
-  el.scrollIntoView({ behavior:'smooth', block:'start' });
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function updateLoadingMsg(msg) {
@@ -82,10 +90,11 @@ function updateLoadingMsg(msg) {
   if (el) el.textContent = msg;
 }
 
-/* ── ERROR STATE ── */
+/* ── ERROR ── */
 function showError(title, msg) {
   const el = document.getElementById('results');
-  if (el) el.innerHTML = `
+  if (!el) return;
+  el.innerHTML = `
     <div class="loading-state">
       <div style="font-size:44px;margin-bottom:14px">⚠️</div>
       <h3 style="color:var(--coral)">${title}</h3>
@@ -93,27 +102,27 @@ function showError(title, msg) {
     </div>`;
 }
 
-/* ── FILTER HELPER ── */
+/* ── FILTERS ── */
 function applyFilters(recipes, filters) {
   const search = (filters.search || '').toLowerCase();
   return recipes.filter(r => {
     const ms = !search
       || r.title.toLowerCase().includes(search)
-      || (r.cuisine||'').toLowerCase().includes(search)
-      || (r.origin||'').toLowerCase().includes(search);
+      || (r.cuisine || '').toLowerCase().includes(search)
+      || (r.origin  || '').toLowerCase().includes(search);
     const md = filters.difficulty === 'all'
-      || (r.difficulty||'').toLowerCase().startsWith(filters.difficulty.toLowerCase().slice(0,3));
+      || (r.difficulty || '').toLowerCase().startsWith(filters.difficulty.toLowerCase().slice(0, 3));
     return ms && md;
   });
 }
 
 /* ── RENDER RESULTS ── */
 function renderResults(data, favorites, filters, tx, targetId = 'results') {
+  const el = document.getElementById(targetId);
+  if (!el) return;
   const { detectedIngredients = [], recipes = [] } = data;
   const filtered   = applyFilters(recipes, filters);
   const smartCount = recipes.filter(r => r.isSmart).length;
-  const el         = document.getElementById(targetId);
-  if (!el) return;
 
   el.innerHTML = `
     <div class="results-top">
@@ -123,55 +132,56 @@ function renderResults(data, favorites, filters, tx, targetId = 'results') {
       </div>
     </div>
     <div class="filters-row">
-      <input class="search-box" id="searchBox" placeholder="${tx.searchPlaceholder}" value="${filters.search||''}"/>
-      <button class="filter-btn ${filters.difficulty==='all'   ?'active':''}" data-filter="all">${tx.allFilter}</button>
-      <button class="filter-btn ${filters.difficulty==='Easy'  ?'active':''}" data-filter="Easy">${tx.easyFilter}</button>
-      <button class="filter-btn ${filters.difficulty==='Medium'?'active':''}" data-filter="Medium">${tx.mediumFilter}</button>
-      <button class="filter-btn ${filters.difficulty==='Hard'  ?'active':''}" data-filter="Hard">${tx.hardFilter}</button>
+      <input class="search-box" id="searchBox" placeholder="${tx.searchPlaceholder}" value="${filters.search || ''}"/>
+      <button class="filter-btn ${filters.difficulty === 'all'    ? 'active' : ''}" data-filter="all">${tx.allFilter}</button>
+      <button class="filter-btn ${filters.difficulty === 'Easy'   ? 'active' : ''}" data-filter="Easy">${tx.easyFilter}</button>
+      <button class="filter-btn ${filters.difficulty === 'Medium' ? 'active' : ''}" data-filter="Medium">${tx.mediumFilter}</button>
+      <button class="filter-btn ${filters.difficulty === 'Hard'   ? 'active' : ''}" data-filter="Hard">${tx.hardFilter}</button>
     </div>
     ${detectedIngredients.length ? `
     <div class="detected-ingredients">
       <div class="detected-label">${tx.yourIngredients}</div>
-      <div class="chip-row">${detectedIngredients.map(i=>`<span class="chip">${i}</span>`).join('')}</div>
+      <div class="chip-row">${detectedIngredients.map(i => `<span class="chip">${i}</span>`).join('')}</div>
     </div>` : ''}
-    <div class="recipe-grid">${filtered.map((r,i)=>renderCard(r,i,favorites,tx)).join('')}</div>`;
+    <div class="recipe-grid">${filtered.map((r, i) => renderCard(r, i, favorites, tx)).join('')}</div>`;
 }
 
 /* ── RECIPE CARD ── */
 function renderCard(recipe, index, favorites, tx) {
   const fav = isFavorite(favorites, recipe.id);
   return `
-    <article class="recipe-card" style="animation-delay:${index*50}ms"
+    <article class="recipe-card" style="animation-delay:${index * 50}ms"
       data-id="${recipe.id}" tabindex="0" role="button">
-      <button class="fav-btn ${fav?'active':''}" data-fav="${recipe.id}">
-        ${fav?'❤️':'🤍'}
+      <button class="fav-btn ${fav ? 'active' : ''}" data-fav="${recipe.id}">
+        ${fav ? '❤️' : '🤍'}
       </button>
       <div class="card-header">
-        <div class="card-origin">🌍 ${recipe.origin||''}</div>
+        <div class="card-origin">🌍 ${recipe.origin || ''}</div>
         <div class="card-badges">
-          <span class="badge time">⏱ ${recipe.cookTime||''}</span>
-          <span class="badge diff">${recipe.difficulty||''}</span>
-          ${recipe.isSmart?'<span class="badge smart">✨ Smart</span>':''}
+          <span class="badge time">⏱ ${recipe.cookTime || ''}</span>
+          <span class="badge diff">${recipe.difficulty || ''}</span>
+          ${recipe.isSmart ? '<span class="badge smart">✨ Smart</span>' : ''}
         </div>
       </div>
-      <span class="card-emoji">${recipe.emoji||'🍽️'}</span>
+      <span class="card-emoji">${recipe.emoji || '🍽️'}</span>
       <div class="card-body">
-        <h2 class="card-title">${recipe.title||''}</h2>
-        <p class="card-desc">${recipe.description||''}</p>
-        ${recipe.isSmart&&recipe.smartSuggestion?`<div class="smart-suggestion">${recipe.smartSuggestion}</div>`:''}
-        ${recipe.nutrition?`
+        <h2 class="card-title">${recipe.title || ''}</h2>
+        <p class="card-desc">${recipe.description || ''}</p>
+        ${recipe.isSmart && recipe.smartSuggestion
+          ? `<div class="smart-suggestion">${recipe.smartSuggestion}</div>` : ''}
+        ${recipe.nutrition ? `
           <div class="nutrition-row">
             <span class="nut-badge">🔥 ${recipe.nutrition.calories} kcal</span>
             <span class="nut-badge">💪 ${recipe.nutrition.protein}</span>
             <span class="nut-badge">🌾 ${recipe.nutrition.carbs}</span>
-          </div>`:''}
+          </div>` : ''}
         <div class="card-ingredients">
-          ${(recipe.availableIngredients||[]).slice(0,4).map(i=>`<span class="ing-chip">${i}</span>`).join('')}
-          ${(recipe.missingIngredients||[]).slice(0,2).map(i=>`<span class="ing-chip missing">${i}</span>`).join('')}
+          ${(recipe.availableIngredients || []).slice(0, 4).map(i => `<span class="ing-chip">${i}</span>`).join('')}
+          ${(recipe.missingIngredients   || []).slice(0, 2).map(i => `<span class="ing-chip missing">${i}</span>`).join('')}
         </div>
         <div class="card-footer">
           <button class="view-recipe-btn" data-view="${recipe.id}">${tx.viewRecipe}</button>
-          <div class="match-score">${tx.match}: <strong>${recipe.matchScore||0}%</strong></div>
+          <div class="match-score">${tx.match}: <strong>${recipe.matchScore || 0}%</strong></div>
         </div>
       </div>
     </article>`;
@@ -200,9 +210,13 @@ function showCategoryLoading(catName, tx) {
 }
 
 /* ── STATS ── */
-async function renderStatsPage(tx, favCount) {
+async function renderStatsPage(tx, favCount, activeTab = 'global') {
   const grid = document.getElementById('statsGrid');
   if (!grid) return;
+
+  document.querySelectorAll('.stats-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === activeTab);
+  });
 
   grid.innerHTML = `
     <div class="loading-state" style="padding:40px">
@@ -210,14 +224,17 @@ async function renderStatsPage(tx, favCount) {
       <h3 style="color:var(--coral)">Loading stats…</h3>
     </div>`;
 
-  const global      = await fetchGlobalStats();
-  const local       = loadStats();
-  recordFavoriteCount(favCount);
+  if (activeTab === 'global') {
+    await renderGlobalStats(grid, tx);
+  } else {
+    await renderPersonalStats(grid, tx, favCount);
+  }
+}
 
+async function renderGlobalStats(grid, tx) {
+  const global      = await fetchGlobalStats();
   const topCuisines = getTopNGlobal(global.cuisineCounts, 5);
   const topRecipes  = getTopNGlobal(global.recipeCounts,  5);
-  const topCuisine  = topCuisines[0];
-  const topRecipe   = topRecipes[0];
   const noData      = global.totalSearches === 0;
 
   grid.innerHTML = `
@@ -229,18 +246,15 @@ async function renderStatsPage(tx, favCount) {
         <div class="stat-label">${tx.statSearches}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">❤️</div>
-        <div class="stat-value">${local.favoriteCount||0}</div>
-        <div class="stat-label">${tx.statFavorites}</div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon">🌍</div>
-        <div class="stat-value">${topCuisine?topCuisine.name:'—'}</div>
+        <div class="stat-value stat-value-sm">${topCuisines[0] ? topCuisines[0].name : '—'}</div>
         <div class="stat-label">${tx.statTopCuisine}</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="grid-column:span 2">
         <div class="stat-icon">🏆</div>
-        <div class="stat-value stat-value-sm">${topRecipe?(global.recipeEmojis?.[topRecipe.name]||'')+' '+topRecipe.name:'—'}</div>
+        <div class="stat-value stat-value-sm">${topRecipes[0]
+          ? (global.recipeEmojis?.[topRecipes[0].name] || '') + ' ' + topRecipes[0].name
+          : '—'}</div>
         <div class="stat-label">${tx.statTopRecipe}</div>
       </div>
     </div>
@@ -253,13 +267,13 @@ async function renderStatsPage(tx, favCount) {
     <div class="stats-section">
       <div class="stats-section-title">${tx.statTopIngredients}</div>
       <div class="stats-bar-list">
-        ${topCuisines.map((c,i)=>{
-          const pct = Math.round((c.count/(topCuisines[0]?.count||1))*100);
+        ${topCuisines.map((c, i) => {
+          const pct = Math.round((c.count / (topCuisines[0]?.count || 1)) * 100);
           return `
             <div class="stats-bar-row">
               <div class="stats-bar-label">${c.name}</div>
               <div class="stats-bar-track">
-                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i*100}ms"></div>
+                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i * 100}ms"></div>
               </div>
               <div class="stats-bar-count">${c.count}x</div>
             </div>`;
@@ -269,18 +283,95 @@ async function renderStatsPage(tx, favCount) {
     <div class="stats-section">
       <div class="stats-section-title">${tx.statRecentRecipes}</div>
       <div class="stats-recipe-list">
-        ${topRecipes.map((r,i)=>`
+        ${topRecipes.map((r, i) => `
           <div class="stats-recipe-row">
-            <div class="stats-recipe-rank">${i+1}</div>
-            <div class="stats-recipe-name">${global.recipeEmojis?.[r.name]||''} ${r.name}</div>
+            <div class="stats-recipe-rank">${i + 1}</div>
+            <div class="stats-recipe-name">${global.recipeEmojis?.[r.name] || ''} ${r.name}</div>
             <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
           </div>`).join('')}
       </div>
-    </div>`}
+    </div>`}`;
+}
 
-    <div style="text-align:center;margin-top:24px">
-      <button class="btn-reset-stats" id="resetStatsBtn">${tx.statReset}</button>
-    </div>`;
+async function renderPersonalStats(grid, tx, favCount) {
+  const user = getUser();
+
+  if (!user) {
+    grid.innerHTML = `
+      <div class="stats-login-prompt">
+        <div class="prompt-icon">👤</div>
+        <h3>${tx.statsSignIn || 'Sign in to see your stats'}</h3>
+        <p>${tx.statsPersonal || 'Track your searches, favorite cuisines, and most opened recipes.'}</p>
+        <button class="btn-primary" id="statsSignInBtn" style="margin:0 auto">
+          ${tx.signIn || 'Sign In'}
+        </button>
+      </div>`;
+    document.getElementById('statsSignInBtn')?.addEventListener('click', openAuthModal);
+    return;
+  }
+
+  const personal    = await fetchPersonalStats(getUserId());
+  const topCuisines = getTopNGlobal(personal.cuisineCounts, 5);
+  const topRecipes  = getTopNGlobal(personal.recipeCounts,  5);
+  const noData      = personal.totalSearches === 0;
+
+  grid.innerHTML = `
+    <div class="stats-global-banner">👤 ${tx.statsPersonal || 'Your personal activity'} · ${getUsername()}</div>
+    <div class="stats-summary">
+      <div class="stat-card">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-value">${personal.totalSearches}</div>
+        <div class="stat-label">${tx.statSearches}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-value">${favCount}</div>
+        <div class="stat-label">${tx.statFavorites}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🌍</div>
+        <div class="stat-value stat-value-sm">${topCuisines[0] ? topCuisines[0].name : '—'}</div>
+        <div class="stat-label">${tx.statTopCuisine}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-value stat-value-sm">${topRecipes[0] ? topRecipes[0].name : '—'}</div>
+        <div class="stat-label">${tx.statTopRecipe}</div>
+      </div>
+    </div>
+
+    ${noData ? `
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>${tx.statNoData}</h3>
+      </div>` : `
+    <div class="stats-section">
+      <div class="stats-section-title">${tx.statTopIngredients}</div>
+      <div class="stats-bar-list">
+        ${topCuisines.map((c, i) => {
+          const pct = Math.round((c.count / (topCuisines[0]?.count || 1)) * 100);
+          return `
+            <div class="stats-bar-row">
+              <div class="stats-bar-label">${c.name}</div>
+              <div class="stats-bar-track">
+                <div class="stats-bar-fill" style="width:${pct}%;animation-delay:${i * 100}ms"></div>
+              </div>
+              <div class="stats-bar-count">${c.count}x</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">${tx.statRecentRecipes}</div>
+      <div class="stats-recipe-list">
+        ${topRecipes.map((r, i) => `
+          <div class="stats-recipe-row">
+            <div class="stats-recipe-rank">${i + 1}</div>
+            <div class="stats-recipe-name">${r.name}</div>
+            <div class="stats-recipe-count">${r.count} ${tx.statTimes}</div>
+          </div>`).join('')}
+      </div>
+    </div>`}`;
 }
 
 /* ── FAVORITES ── */
@@ -296,7 +387,7 @@ function renderFavorites(favorites, tx) {
       </div>`;
     return;
   }
-  grid.innerHTML = `<div class="recipe-grid">${favorites.map((r,i)=>renderCard(r,i,favorites,tx)).join('')}</div>`;
+  grid.innerHTML = `<div class="recipe-grid">${favorites.map((r, i) => renderCard(r, i, favorites, tx)).join('')}</div>`;
 }
 
 /* ── MODAL ── */
@@ -307,62 +398,63 @@ function openModal(recipe, tx) {
     <div class="modal-header">
       <div>
         <div class="modal-origin-line">
-          <span class="modal-origin-badge">🌍 ${recipe.origin||''}</span>
-          <span style="font-size:12px;color:var(--text-dim)">${recipe.cuisine||''}</span>
+          <span class="modal-origin-badge">🌍 ${recipe.origin || ''}</span>
+          <span style="font-size:12px;color:var(--text-dim)">${recipe.cuisine || ''}</span>
         </div>
-        <h2 class="modal-title">${recipe.emoji||''} ${recipe.title||''}</h2>
+        <h2 class="modal-title">${recipe.emoji || ''} ${recipe.title || ''}</h2>
       </div>
       <button class="modal-close" id="modalCloseBtn">×</button>
     </div>
     <div class="modal-body">
-      <p class="modal-desc">${recipe.description||''}</p>
-      ${recipe.isSmart&&recipe.smartSuggestion?`<div class="smart-suggestion" style="margin-bottom:18px">${recipe.smartSuggestion}</div>`:''}
+      <p class="modal-desc">${recipe.description || ''}</p>
+      ${recipe.isSmart && recipe.smartSuggestion
+        ? `<div class="smart-suggestion" style="margin-bottom:18px">${recipe.smartSuggestion}</div>` : ''}
 
       <div class="modal-section-title">${tx.atAGlance}</div>
       <div class="modal-meta">
-        <div class="meta-item"><div class="meta-value">${recipe.prepTime||'—'}</div><div class="meta-label">${tx.prep}</div></div>
-        <div class="meta-item"><div class="meta-value">${recipe.cookTime||'—'}</div><div class="meta-label">${tx.cook}</div></div>
-        <div class="meta-item"><div class="meta-value">${recipe.servings||'—'}</div><div class="meta-label">${tx.servings}</div></div>
-        <div class="meta-item"><div class="meta-value">${recipe.difficulty||'—'}</div><div class="meta-label">${tx.difficulty}</div></div>
-        <div class="meta-item"><div class="meta-value" style="color:var(--mint-dim)">${recipe.matchScore||0}%</div><div class="meta-label">${tx.match}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.prepTime || '—'}</div><div class="meta-label">${tx.prep}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.cookTime || '—'}</div><div class="meta-label">${tx.cook}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.servings || '—'}</div><div class="meta-label">${tx.servings}</div></div>
+        <div class="meta-item"><div class="meta-value">${recipe.difficulty || '—'}</div><div class="meta-label">${tx.difficulty}</div></div>
+        <div class="meta-item"><div class="meta-value" style="color:var(--mint-dim)">${recipe.matchScore || 0}%</div><div class="meta-label">${tx.match}</div></div>
       </div>
 
-      ${recipe.nutrition?`
+      ${recipe.nutrition ? `
         <div class="modal-section-title">${tx.nutritionSection}</div>
         <div class="nutrition-grid">
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.calories}</div><div class="nut-label">${tx.calories}</div></div>
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.protein}</div><div class="nut-label">${tx.protein}</div></div>
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.carbs}</div><div class="nut-label">${tx.carbs}</div></div>
           <div class="nut-item"><div class="nut-value">${recipe.nutrition.fat}</div><div class="nut-label">${tx.fat}</div></div>
-        </div>`:''}
+        </div>` : ''}
 
       <div class="modal-section-title">${tx.ingredientsSection}</div>
       <div class="ingredients-grid">
-        ${(recipe.allIngredients||[]).map(i=>`
+        ${(recipe.allIngredients || []).map(i => `
           <div class="ing-row">
-            <span class="ing-check">${i.have?'✅':'❌'}</span>
-            <span class="ing-name" style="${!i.have?'opacity:.5;text-decoration:line-through':''}">${i.name}</span>
-            <span class="ing-amount">${i.amount||''}</span>
+            <span class="ing-check">${i.have ? '✅' : '❌'}</span>
+            <span class="ing-name" style="${!i.have ? 'opacity:.5;text-decoration:line-through' : ''}">${i.name}</span>
+            <span class="ing-amount">${i.amount || ''}</span>
           </div>`).join('')}
       </div>
 
       <div class="modal-section-title">${tx.preparation}</div>
       <div class="steps-list">
-        ${(recipe.steps||[]).map((s,i)=>`
+        ${(recipe.steps || []).map((s, i) => `
           <div class="step-item">
-            <div class="step-num">${String(i+1).padStart(2,'0')}</div>
+            <div class="step-num">${String(i + 1).padStart(2, '0')}</div>
             <div class="step-content">
-              <div class="step-title">${s.title||''}</div>
-              <p class="step-text">${s.instruction||''}</p>
+              <div class="step-title">${s.title || ''}</div>
+              <p class="step-text">${s.instruction || ''}</p>
             </div>
           </div>`).join('')}
       </div>
 
-      ${recipe.tips?`
+      ${recipe.tips ? `
         <div class="chef-tip">
           <div class="chef-tip-label">${tx.chefTip}</div>
           <p class="chef-tip-text">${recipe.tips}</p>
-        </div>`:''}
+        </div>` : ''}
     </div>`;
 
   document.getElementById('modal').style.display = 'flex';
@@ -371,6 +463,7 @@ function openModal(recipe, tx) {
 }
 
 function closeModal() {
-  document.getElementById('modal').style.display = 'none';
+  const modal = document.getElementById('modal');
+  if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
 }

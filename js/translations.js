@@ -4,14 +4,18 @@
 
 const TRANSLATIONS = {
   en: {
+    // Header & Nav
     tagline:           'Smart Recipes, Real Ingredients',
     navExplore:        'Explore',
     navCategories:     'Categories',
     navStats:          '📊 Stats',
     navFavorites:      '❤️ Favorites',
+    signIn:            'Sign In',
+    // Hero
+    eyebrow:           'Smart Recipes, Real Ingredients',
     heroTitle:         "What's cooking in your<br/><em>kitchen</em> today?",
     heroSub:           "Tell us what ingredients you have and we'll find you delicious recipes from cuisines all around the world.",
-    eyebrow:           'Smart Recipes, Real Ingredients',
+    // Input
     tabText:           'Type Ingredients',
     tabImg:            'Upload Photos',
     findBtn:           'Find Recipes',
@@ -20,8 +24,10 @@ const TRANSLATIONS = {
     uploadTitle:       'Drop your photos here',
     uploadSub:         'or click to browse files',
     analyzeBtn:        'Analyse & Find Recipes',
+    // Loading
     loading1:          'Working the kitchen…',
     loading2:          'Finding the best recipes…',
+    // Results
     foundRecipes:      'Found',
     forYou:            'recipes for you',
     basedOn:           'Based on',
@@ -33,6 +39,7 @@ const TRANSLATIONS = {
     mediumFilter:      'Medium',
     hardFilter:        'Hard',
     searchPlaceholder: 'Search recipes…',
+    // Card & Modal
     viewRecipe:        'View Recipe →',
     match:             'Match',
     atAGlance:         'At a Glance',
@@ -48,14 +55,18 @@ const TRANSLATIONS = {
     protein:           'Protein',
     carbs:             'Carbs',
     fat:               'Fat',
+    // Categories
     catTitleMain:      'Browse',
     catTitleSub:       'Categories',
     catSubtitle:       'Pick a cuisine and discover recipes instantly',
     catLoading:        'Loading recipes for',
+    // Stats
     statsTitleMain:    'Your',
     statsTitleSub:     'Stats',
-    statsSubtitle:     'Your personal Recipia activity',
+    statsSubtitle:     'Recipia activity',
     statsGlobal:       '🌍 Global stats — from all users worldwide',
+    statsPersonal:     'Your personal activity',
+    statsSignIn:       'Sign in to see your personal stats',
     statSearches:      'Total Searches',
     statFavorites:     'Saved Favorites',
     statTopCuisine:    'Top Cuisine',
@@ -63,15 +74,18 @@ const TRANSLATIONS = {
     statTopIngredients:'Top Cuisines Explored',
     statRecentRecipes: 'Most Opened Recipes',
     statNoData:        'No data yet — start searching!',
-    statReset:         'Reset Stats',
     statTimes:         'times',
+    // Favorites
     favTitleMain:      'Your',
     favTitleSub:       'Favorites',
     favSub:            "Recipes you've saved for later",
     emptyFav:          'No favorites yet',
     emptyFavSub:       'Tap ❤️ on any recipe to save it here',
+    // Footer
     footerText:        'Discover flavors from every corner of the world',
+    // Lang
     langBtn:           '🌐 العربية',
+    // Errors
     wrongTitle:        'Something went wrong',
     errorImg:          'Could not analyse images: ',
     errorRecipes:      'Could not load recipes: ',
@@ -84,19 +98,24 @@ const TRANSLATIONS = {
       "My AI brain is trained on recipes, not on whatever that was! 😅",
       "That's not on the menu. Try: tomato, pasta, olive oil! 🍝",
     ],
-    invalidImage:    'is not a supported image format. Use JPG, PNG, or WEBP.',
-    imageTooLarge:   'is too large. Max size is 5MB.',
+    // Image validation
+    invalidImage:      'is not a supported image format. Use JPG, PNG, or WEBP.',
+    imageTooLarge:     'is too large. Max size is 5MB.',
   },
 
   ar: {
+    // Header & Nav
     tagline:           'وصفات ذكية، مكونات حقيقية',
     navExplore:        'استكشاف',
     navCategories:     'التصنيفات',
     navStats:          '📊 إحصائيات',
     navFavorites:      '❤️ المفضلة',
+    signIn:            'تسجيل الدخول',
+    // Hero
+    eyebrow:           'وصفات ذكية، مكونات حقيقية',
     heroTitle:         'ماذا يوجد في<br/><em>مطبخك</em> اليوم؟',
     heroSub:           'أخبرنا بالمكونات المتاحة لديك وسنجد لك وصفات لذيذة من مطابخ العالم.',
-    eyebrow:           'وصفات ذكية، مكونات حقيقية',
+    // Input
     tabText:           'اكتب المكونات',
     tabImg:            'رفع صور',
     findBtn:           'ابحث عن وصفات',
@@ -105,8 +124,10 @@ const TRANSLATIONS = {
     uploadTitle:       'اسحب صورك هنا',
     uploadSub:         'أو اضغط لاختيار ملفات',
     analyzeBtn:        'تحليل وإيجاد وصفات',
+    // Loading
     loading1:          'جاري العمل في المطبخ…',
     loading2:          'جاري البحث عن أفضل الوصفات…',
+    // Results
     foundRecipes:      'تم إيجاد',
     forYou:            'وصفة لك',
     basedOn:           'بناءً على',
@@ -118,6 +139,7 @@ const TRANSLATIONS = {
     mediumFilter:      'متوسط',
     hardFilter:        'صعب',
     searchPlaceholder: 'ابحث عن وصفة…',
+    // Card & Modal
     viewRecipe:        'عرض الوصفة ←',
     match:             'تطابق',
     atAGlance:         'نظرة سريعة',
@@ -133,14 +155,18 @@ const TRANSLATIONS = {
     protein:           'بروتين',
     carbs:             'كربوهيدرات',
     fat:               'دهون',
+    // Categories
     catTitleMain:      'تصفح',
     catTitleSub:       'التصنيفات',
     catSubtitle:       'اختر مطبخاً واكتشف الوصفات فوراً',
     catLoading:        'جاري تحميل وصفات',
+    // Stats
     statsTitleMain:    'إحصائياتك',
     statsTitleSub:     '',
-    statsSubtitle:     'نشاطك الشخصي على ريسيبيا',
-    statsGlobal:       '🌍 إحصائيات عالمية — من كل المستخدمين حول العالم',
+    statsSubtitle:     'نشاطك على ريسيبيا',
+    statsGlobal:       '🌍 إحصائيات عالمية — من كل المستخدمين',
+    statsPersonal:     'نشاطك الشخصي',
+    statsSignIn:       'سجل دخولك لرؤية إحصائياتك الشخصية',
     statSearches:      'إجمالي عمليات البحث',
     statFavorites:     'المفضلة المحفوظة',
     statTopCuisine:    'أكثر مطبخ',
@@ -148,15 +174,18 @@ const TRANSLATIONS = {
     statTopIngredients:'أكثر المطابخ استكشافاً',
     statRecentRecipes: 'أكثر الوصفات فتحاً',
     statNoData:        'لا توجد بيانات بعد — ابدأ البحث!',
-    statReset:         'إعادة تعيين الإحصائيات',
     statTimes:         'مرات',
+    // Favorites
     favTitleMain:      'المفضلة',
     favTitleSub:       '',
     favSub:            'الوصفات التي حفظتها',
     emptyFav:          'لا توجد مفضلة بعد',
     emptyFavSub:       'اضغط ❤️ على أي وصفة لحفظها هنا',
+    // Footer
     footerText:        'اكتشف نكهات من كل أرجاء العالم',
+    // Lang
     langBtn:           '🌐 English',
+    // Errors
     wrongTitle:        'حدث خطأ ما',
     errorImg:          'تعذر تحليل الصور: ',
     errorRecipes:      'تعذر تحميل الوصفات: ',
@@ -169,23 +198,24 @@ const TRANSLATIONS = {
       "!دماغي الذكية اتدربت على وصفات، مش على اللي كتبته ده 😅",
       "!ده مش موجود في المنيو. جرب: طماطم، معكرونة، زيت زيتون 🍝",
     ],
-    invalidImage:    'ليس تنسيق صورة مدعوم. استخدم JPG أو PNG أو WEBP.',
-    imageTooLarge:   'حجم الملف كبير جداً. الحد الأقصى 5 ميغابايت.',
+    // Image validation
+    invalidImage:      'ليس تنسيق صورة مدعوم. استخدم JPG أو PNG أو WEBP.',
+    imageTooLarge:     'حجم الملف كبير جداً. الحد الأقصى 5 ميغابايت.',
   },
 };
 
 /* ── CATEGORIES ── */
 const CATEGORIES = [
-  { id:'italian',      emoji:'🍝', name:'Italian',       nameAr:'إيطالي',       ingredient:'pasta, tomato, basil, olive oil, parmesan' },
-  { id:'mexican',      emoji:'🌮', name:'Mexican',       nameAr:'مكسيكي',       ingredient:'tortilla, beef, avocado, lime, jalapeño' },
-  { id:'indian',       emoji:'🍛', name:'Indian',        nameAr:'هندي',         ingredient:'chicken, curry, turmeric, ginger, rice' },
-  { id:'chinese',      emoji:'🥢', name:'Chinese',       nameAr:'صيني',         ingredient:'soy sauce, ginger, garlic, noodles, sesame' },
-  { id:'japanese',     emoji:'🍱', name:'Japanese',      nameAr:'ياباني',       ingredient:'rice, soy sauce, mirin, tofu, seaweed' },
-  { id:'middleeastern',emoji:'🧆', name:'Middle Eastern',nameAr:'شرق أوسطي',   ingredient:'chickpeas, tahini, cumin, garlic, lemon' },
-  { id:'french',       emoji:'🥐', name:'French',        nameAr:'فرنسي',        ingredient:'butter, cream, garlic, thyme, wine' },
-  { id:'american',     emoji:'🍔', name:'American',      nameAr:'أمريكي',       ingredient:'beef, cheese, potato, onion, ketchup' },
-  { id:'mediterranean',emoji:'🥗', name:'Mediterranean', nameAr:'متوسطي',       ingredient:'olive oil, lemon, feta, tomato, cucumber' },
-  { id:'thai',         emoji:'🍜', name:'Thai',          nameAr:'تايلاندي',     ingredient:'coconut milk, lemongrass, fish sauce, chili, rice' },
-  { id:'moroccan',     emoji:'🥘', name:'Moroccan',      nameAr:'مغربي',        ingredient:'lamb, couscous, cinnamon, cumin, apricot' },
-  { id:'greek',        emoji:'🥙', name:'Greek',         nameAr:'يوناني',       ingredient:'feta, olive, lemon, oregano, lamb' },
+  { id:'italian',       emoji:'🍝', name:'Italian',        nameAr:'إيطالي',      ingredient:'pasta, tomato, basil, olive oil, parmesan' },
+  { id:'mexican',       emoji:'🌮', name:'Mexican',        nameAr:'مكسيكي',      ingredient:'tortilla, beef, avocado, lime, jalapeño' },
+  { id:'indian',        emoji:'🍛', name:'Indian',         nameAr:'هندي',        ingredient:'chicken, curry, turmeric, ginger, rice' },
+  { id:'chinese',       emoji:'🥢', name:'Chinese',        nameAr:'صيني',        ingredient:'soy sauce, ginger, garlic, noodles, sesame' },
+  { id:'japanese',      emoji:'🍱', name:'Japanese',       nameAr:'ياباني',      ingredient:'rice, soy sauce, mirin, tofu, seaweed' },
+  { id:'middleeastern', emoji:'🧆', name:'Middle Eastern', nameAr:'شرق أوسطي',  ingredient:'chickpeas, tahini, cumin, garlic, lemon' },
+  { id:'french',        emoji:'🥐', name:'French',         nameAr:'فرنسي',       ingredient:'butter, cream, garlic, thyme, wine' },
+  { id:'american',      emoji:'🍔', name:'American',       nameAr:'أمريكي',      ingredient:'beef, cheese, potato, onion, ketchup' },
+  { id:'mediterranean', emoji:'🥗', name:'Mediterranean',  nameAr:'متوسطي',      ingredient:'olive oil, lemon, feta, tomato, cucumber' },
+  { id:'thai',          emoji:'🍜', name:'Thai',           nameAr:'تايلاندي',    ingredient:'coconut milk, lemongrass, fish sauce, chili, rice' },
+  { id:'moroccan',      emoji:'🥘', name:'Moroccan',       nameAr:'مغربي',       ingredient:'lamb, couscous, cinnamon, cumin, apricot' },
+  { id:'greek',         emoji:'🥙', name:'Greek',          nameAr:'يوناني',      ingredient:'feta, olive, lemon, oregano, lamb' },
 ];

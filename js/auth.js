@@ -1,75 +1,68 @@
 /* ═══════════════════════════════════════════════════════════
    RECIPIA — Auth Module
-   Handles Sign Up / Sign In / Sign Out via Supabase Auth
+   Sign Up / Sign In / Sign Out via Supabase Auth
 ═══════════════════════════════════════════════════════════ */
 
-const AUTH_URL      = 'https://nkqvhktwhqueltbrjcxg.supabase.co/auth/v1';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rcXZoa3R3aHF1ZWx0YnJqY3hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTM2MzUsImV4cCI6MjA5MzQyOTYzNX0.p7SEHdhvJLELZ-fCr9jJqQeeNMT1NPL0532VKWjXydI';
-const SESSION_KEY   = 'recipia_session';
+const AUTH_URL    = 'https://nkqvhktwhqueltbrjcxg.supabase.co/auth/v1';
+const SESSION_KEY = 'recipia_session';
 
-/* ── CURRENT USER STATE ── */
-let currentUser    = null;
-let currentSession = null;
+let _currentUser    = null;
+let _currentSession = null;
 
-/**
- * Loads session from localStorage on startup.
- */
-function loadSession() {
+/* ── INIT: restore session on page load ── */
+(function loadSession() {
   try {
     const saved = JSON.parse(localStorage.getItem(SESSION_KEY));
     if (saved?.access_token) {
-      currentSession = saved;
-      currentUser    = saved.user;
+      _currentSession = saved;
+      _currentUser    = saved.user;
     }
   } catch { /* ignore */ }
+})();
+
+/* ── GETTERS ── */
+function getUser()     { return _currentUser; }
+function getUserId()   { return _currentUser?.id || null; }
+function getUsername() {
+  return _currentUser?.user_metadata?.username
+    || _currentUser?.email?.split('@')[0]
+    || 'Chef';
 }
 
-/**
- * Saves session to localStorage.
- */
+/* ── SESSION MANAGEMENT ── */
 function saveSession(session) {
-  currentSession = session;
-  currentUser    = session?.user || null;
+  _currentSession = session;
+  _currentUser    = session?.user || null;
   if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   else         localStorage.removeItem(SESSION_KEY);
-}
-
-/**
- * Returns current logged-in user or null.
- */
-function getUser() { return currentUser; }
-
-/**
- * Returns current user ID or null.
- */
-function getUserId() { return currentUser?.id || null; }
-
-/**
- * Returns current username from profile or email prefix.
- */
-function getUsername() {
-  return currentUser?.user_metadata?.username
-    || currentUser?.email?.split('@')[0]
-    || 'Chef';
 }
 
 /* ── SIGN UP ── */
 async function signUp(email, password, username) {
   const res = await fetch(`${AUTH_URL}/signup`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
-    body:    JSON.stringify({
-      email, password,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey':       SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      email,
+      password,
       data: { username },
     }),
   });
+
   const data = await res.json();
-  if (data.error || !data.access_token) {
+  if (!res.ok || data.error) {
     throw new Error(data.error?.message || data.msg || 'Sign up failed');
   }
+  if (!data.access_token) {
+    throw new Error('Please check your email to confirm your account.');
+  }
+
   saveSession(data);
 
-  // Create profile row
+  // Create profile row in profiles table
   await supabaseRequest('profiles', {
     method: 'POST',
     body:   { id: data.user.id, username, avatar_emoji: '👨‍🍳' },
@@ -82,13 +75,18 @@ async function signUp(email, password, username) {
 async function signIn(email, password) {
   const res = await fetch(`${AUTH_URL}/token?grant_type=password`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
-    body:    JSON.stringify({ email, password }),
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey':       SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ email, password }),
   });
+
   const data = await res.json();
-  if (data.error || !data.access_token) {
-    throw new Error(data.error_description || data.error || 'Sign in failed');
+  if (!res.ok || data.error) {
+    throw new Error(data.error_description || data.error?.message || 'Invalid email or password');
   }
+
   saveSession(data);
   return data;
 }
@@ -100,13 +98,10 @@ async function signOut() {
       method:  'POST',
       headers: {
         'Content-Type':  'application/json',
-        'apikey':        SUPABASE_KEY,
-        'Authorization': `Bearer ${currentSession?.access_token}`,
+        'apikey':        SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${_currentSession?.access_token}`,
       },
     });
-  } catch { /* ignore */ }
+  } catch { /* ignore network errors */ }
   saveSession(null);
 }
-
-/* ── INIT ── */
-loadSession();
