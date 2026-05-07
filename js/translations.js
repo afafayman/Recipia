@@ -186,6 +186,6 @@ const CATEGORIES = [
   { id:'american',     emoji:'🍔', name:'American',      nameAr:'أمريكي',       ingredient:'beef, cheese, potato, onion, ketchup' },
   { id:'mediterranean',emoji:'🥗', name:'Mediterranean', nameAr:'متوسطي',       ingredient:'olive oil, lemon, feta, tomato, cucumber' },
   { id:'thai',         emoji:'🍜', name:'Thai',          nameAr:'تايلاندي',     ingredient:'coconut milk, lemongrass, fish sauce, chili, rice' },
-  { id:'moroccan',     emoji:'', name:'Moroccan',      nameAr:'مغربي',        ingredient:'lamb, couscous, cinnamon, cumin, apricot' },
-  { id:'greek',        emoji:'🫒', name:'Greek',         nameAr:'يوناني',       ingredient:'feta, olive, lemon, oregano, lamb' },
+  { id:'moroccan',     emoji:'🥘', name:'Moroccan',      nameAr:'مغربي',        ingredient:'lamb, couscous, cinnamon, cumin, apricot' },
+  { id:'greek',        emoji:'🥙', name:'Greek',         nameAr:'يوناني',       ingredient:'feta, olive, lemon, oregano, lamb' },
 ];
