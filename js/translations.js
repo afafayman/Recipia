@@ -8,8 +8,8 @@ const TRANSLATIONS = {
     tagline:           'Smart Recipes, Real Ingredients',
     navExplore:        'Explore',
     navCategories:     'Categories',
-    navStats:          '📊 Stats',
-    navFavorites:      '❤️ Favorites',
+    navStats:          'Stats',
+    navFavorites:      'Favorites',
     signIn:            'Sign In',
     // Hero
     eyebrow:           'Smart Recipes, Real Ingredients',
@@ -108,8 +108,8 @@ const TRANSLATIONS = {
     tagline:           'وصفات ذكية، مكونات حقيقية',
     navExplore:        'استكشاف',
     navCategories:     'التصنيفات',
-    navStats:          '📊 إحصائيات',
-    navFavorites:      '❤️ المفضلة',
+    navStats:          'إحصائيات',
+    navFavorites:      'المفضلة',
     signIn:            'تسجيل الدخول',
     // Hero
     eyebrow:           'وصفات ذكية، مكونات حقيقية',

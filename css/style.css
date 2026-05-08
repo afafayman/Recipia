@@ -662,3 +662,11 @@ body.ar .logo span { font-style: normal; }
   .ingredients-grid { grid-template-columns: 1fr 1fr; }
   .category-grid { grid-template-columns: repeat(4,1fr); }
 }
+
+@media (max-width: 768px) {
+  #page-categories .page-title,
+  #page-stats .page-title,
+  #page-favorites .page-title {
+    margin-top: 100px;
+  }
+}
