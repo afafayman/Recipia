@@ -480,7 +480,7 @@ body.ar .mobile-nav-link { text-align: right; }
 .modal-body { padding: 22px; }
 .modal-origin-line { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .modal-origin-badge { background: rgba(123,201,160,0.12); border: 1px solid rgba(123,201,160,0.3); border-radius: 100px; padding: 5px 13px; font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mint-dim); }
-.modal-title { font-family: 'Playfair Display', serif; font-size: clamp(22px,4vw,32px); font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.15; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: clamp(22px,4vw,31px); font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.15; }
 .modal-desc  { font-size: 14px; color: var(--text-dim); line-height: 1.75; margin-bottom: 24px; }
 .modal-section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--coral); margin-bottom: 13px; padding-bottom: 7px; border-bottom: 2px solid var(--border); }
 .modal-meta { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 24px; }
