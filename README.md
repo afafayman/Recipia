@@ -2,13 +2,14 @@
 
 > An AI-powered recipe discovery web application that suggests personalized recipes from world cuisines based on the ingredients you already have at home.
 
-**Live Demo:** [recipiaa.vercel.app](https://recipiaa.vercel.app)
+**Live Demo:** [RECIPIA](https://recipiaa.vercel.app)
 
 ---
 
 ## 📸 Screenshots
 
-> *(Add screenshots here after deployment)*
+> *(<img width="1908" height="1214" alt="image" src="https://github.com/user-attachments/assets/bc528c31-50a9-48a5-a4a9-4d403950fb3a" />
+)*
 
 ---
 
