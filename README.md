@@ -8,8 +8,7 @@
 
 ## 📸 Screenshots
 
-> *(<img width="1908" height="1214" alt="image" src="https://github.com/user-attachments/assets/bc528c31-50a9-48a5-a4a9-4d403950fb3a" />
-)*
+> *<img width="1908" height="1214" alt="image" src="https://github.com/user-attachments/assets/bc528c31-50a9-48a5-a4a9-4d403950fb3a" />*
 
 ---
 
