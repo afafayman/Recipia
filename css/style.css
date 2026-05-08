@@ -584,7 +584,11 @@ body.ar .mobile-nav-link { text-align: right; }
 .page { display: none; }
 .page.active { display: block; }
 #page-home.active { display: block; padding: 0; max-width: none; }
-#page-categories, #page-stats, #page-favorites { padding: 90px 20px 80px; max-width: 1200px; margin: 0 auto; }
+#page-categories, #page-stats, #page-favorites {
+  padding: 100px 20px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
 .page-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .page-subtitle { font-size: 14px; color: var(--text-dim); margin-bottom: 28px; }
