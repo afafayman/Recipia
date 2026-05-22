@@ -630,7 +630,8 @@ body.ar .logo span { font-style: normal; }
 }
 
 @media (max-width: 768px) {
-  .nav-link, .theme-btn, .lang-btn, .auth-btn { display: none; }
+  .nav-link, .auth-btn { display: none; }
+  .theme-btn, .lang-btn { display: flex; }
   .hamburger { display: block; }
 }
 
